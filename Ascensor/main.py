@@ -5,7 +5,7 @@
 import time
 
 # Constants
-NUM_FLOORS = 14
+NUM_FLOORS = 11
 DELTA = 0.5
 
 # Our elevator can sense the following information:
@@ -18,8 +18,9 @@ out_requests = [False] * NUM_FLOORS
 # S3. In which floors do people want to get in
 # in_requests = [False, True, False, False, True, False,
 #                False, False, False, False, False, False, False, False]
-in_requests = [-1, 12, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1]
-
+in_requests = [9, -1, -1, 7, -1, 2, -1, -1, -1, -1, 6]
+direction_requests = ["up", "no", "no", "up", "no", "down", "no",
+                      "no", "no", "no", "down"]
 
 # S4. The state of the doors (open/closed)
 state_doors = "closed"
@@ -106,7 +107,11 @@ def wait():
 def elevator():
     global current_floor, direction, out_requests, in_requests, state_doors
     while True:
-        if (state_doors == "closed" and (in_requests[current_floor] != -1 or out_requests[current_floor])):
+        # print("Current floor:", current_floor)
+        # print("in_requests:", in_requests)
+        # print("out_requests:", out_requests)
+        # print("direction_requests:", direction_requests)
+        if (state_doors == "closed" and direction == "up" and (direction_requests[current_floor] == "up" or out_requests[current_floor] or (current_floor == NUM_FLOORS - 1 and in_requests[current_floor] != -1))):
             open_doors()  # 1 , 2
             wait()  # 3
             close_doors()  # 3
@@ -114,21 +119,31 @@ def elevator():
             if in_requests[current_floor] != -1:
                 out_requests[in_requests[current_floor]] = True
             in_requests[current_floor] = -1
+            direction_requests[current_floor] = "no"
+        elif (state_doors == "closed" and direction == "down" and (direction_requests[current_floor] == "down" or out_requests[current_floor] or (current_floor == 0 and in_requests[current_floor] != -1))):
+            open_doors()  # 1 , 2
+            wait()  # 3
+            close_doors()  # 3
+            out_requests[current_floor] = False
+            if in_requests[current_floor] != -1:
+                out_requests[in_requests[current_floor]] = True
+            in_requests[current_floor] = -1
+            direction_requests[current_floor] = "no"
         elif (state_doors == "closed" and direction == "up" and not out_requests[current_floor] and sig(current_floor, "out") != -1):
             go_up()  # 5
-        elif (state_doors == "closed" and direction == "up" and in_requests[current_floor] == -1 and sig(current_floor, "in") != -1):
+        elif (state_doors == "closed" and direction == "up" and direction_requests[current_floor] == "no" and sig(current_floor, "in") != -1):
             go_up()  # 6
         elif (state_doors == "closed" and direction == "down" and not out_requests[current_floor] and prec(current_floor, "out") != -1):
             go_down()  # 7
-        elif (state_doors == "closed" and direction == "down" and in_requests[current_floor] == -1 and prec(current_floor, "in") != -1):
+        elif (state_doors == "closed" and direction == "down" and direction_requests[current_floor] == "no" and prec(current_floor, "in") != -1):
             go_down()  # 8
         elif (state_doors == "closed" and direction == "up" and not out_requests[current_floor] and prec(current_floor, "out") != -1):
             go_down()  # 9
-        elif (state_doors == "closed" and direction == "up" and in_requests[current_floor] == -1 and prec(current_floor, "in") != -1):
+        elif (state_doors == "closed" and direction == "up" and direction_requests[current_floor] == "no" and prec(current_floor, "in") != -1):
             go_down()  # 10
         elif (state_doors == "closed" and direction == "down" and not out_requests[current_floor] and sig(current_floor, "out") != -1):
             go_up()  # 11
-        elif (state_doors == "closed" and direction == "down" and in_requests[current_floor] == -1 and sig(current_floor, "in") != -1):
+        elif (state_doors == "closed" and direction == "down" and direction_requests[current_floor] == "no" and sig(current_floor, "in") != -1):
             go_up()  # 12
         else:
             break
