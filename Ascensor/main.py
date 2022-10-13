@@ -5,7 +5,7 @@
 import time
 
 # Constants
-NUM_FLOORS = 10
+NUM_FLOORS = 14
 DELTA = 0.5
 
 # Our elevator can sense the following information:
@@ -13,10 +13,13 @@ DELTA = 0.5
 current_floor = 0
 
 # S2. To which floors do the people want to go
+# out_requests = [False] * NUM_FLOORS
 out_requests = [False] * NUM_FLOORS
-
 # S3. In which floors do people want to get in
-in_requests = [False] * NUM_FLOORS
+# in_requests = [False, True, False, False, True, False,
+#                False, False, False, False, False, False, False, False]
+in_requests = [-1, 12, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+
 
 # S4. The state of the doors (open/closed)
 state_doors = "closed"
@@ -30,46 +33,49 @@ state_doors = "closed"
 
 direction = "up"  # Current direction
 
-
 # returns the next higher floor for which there is an exit/entry request
+
+
 def sig(floor, in_out):
     if (in_out == "in"):
         for i in range(floor, NUM_FLOORS):
-            if (in_requests[i]):
+            if (in_requests[i] != -1):
                 return i
     else:
         for i in range(floor, NUM_FLOORS):
             if (out_requests[i]):
                 return i
-    return 0
+    return -1
 
 
 # returns the next lower floor for which there is an exit/entry request
 def prec(floor, in_out):
     if (in_out == "in"):
         for i in range(floor, -1, -1):
-            if (in_requests[i]):
+            if (in_requests[i] != -1):
                 return i
     else:
         for i in range(floor, -1, -1):
             if (out_requests[i]):
                 return i
-    return 0
+    return -1
 
 
 # Function that implements A1
 def go_up():
-    global current_floor
+    global current_floor, direction
     current_floor += 1
-    print("Going up to floor", current_floor)
+    direction = "up"
+    print("Going up to floor", str(current_floor) + "\n")
     return current_floor
 
 
 # Function that implements A2
 def go_down():
-    global current_floor
+    global current_floor, direction
     current_floor -= 1
-    print("Going down to floor", current_floor)
+    direction = "down"
+    print("Going down to floor", str(current_floor) + "\n")
     return current_floor
 
 
@@ -77,7 +83,7 @@ def go_down():
 def open_doors():
     global state_doors
     state_doors = "open"
-    print("Doors are open")
+    print("Doors are open \n")
     return state_doors
 
 
@@ -85,40 +91,47 @@ def open_doors():
 def close_doors():
     global state_doors
     state_doors = "closed"
-    print("Doors are closed")
+    print("Doors are closed \n")
     return state_doors
 
 
 # Function that implements A5
 def wait():
-    print("Waiting for", DELTA, "seconds")
+    print("Waiting for", DELTA, "seconds \n")
     time.sleep(DELTA)
     return DELTA
 
 
 # Function that implements the elevator's behaviour
 def elevator():
-    global current_floor, direction
+    global current_floor, direction, out_requests, in_requests, state_doors
     while True:
-        if (state_doors == "closed" and (in_requests[current_floor] or out_requests[current_floor])):
+        if (state_doors == "closed" and (in_requests[current_floor] != -1 or out_requests[current_floor])):
             open_doors()  # 1 , 2
             wait()  # 3
             close_doors()  # 3
             out_requests[current_floor] = False
-            in_requests[current_floor] = False
-        elif (state_doors == "closed" and direction == "up" and out_requests[current_floor] and sig(current_floor, "out") != 0):
+            if in_requests[current_floor] != -1:
+                out_requests[in_requests[current_floor]] = True
+            in_requests[current_floor] = -1
+        elif (state_doors == "closed" and direction == "up" and not out_requests[current_floor] and sig(current_floor, "out") != -1):
             go_up()  # 5
-        elif (state_doors == "closed" and direction == "up" and in_requests[current_floor] and sig(current_floor, "in") != 0):
+        elif (state_doors == "closed" and direction == "up" and in_requests[current_floor] == -1 and sig(current_floor, "in") != -1):
             go_up()  # 6
-        elif (state_doors == "closed" and direction == "down" and out_requests[current_floor] and prec(current_floor, "out") != 0):
+        elif (state_doors == "closed" and direction == "down" and not out_requests[current_floor] and prec(current_floor, "out") != -1):
             go_down()  # 7
-        elif (state_doors == "closed" and direction == "down" and in_requests[current_floor] and prec(current_floor, "in") != 0):
+        elif (state_doors == "closed" and direction == "down" and in_requests[current_floor] == -1 and prec(current_floor, "in") != -1):
             go_down()  # 8
-        elif (state_doors == "closed" and direction == "up" and out_requests[current_floor] and prec(current_floor, "out") != 0):
+        elif (state_doors == "closed" and direction == "up" and not out_requests[current_floor] and prec(current_floor, "out") != -1):
             go_down()  # 9
-        elif (state_doors == "closed" and direction == "up" and in_requests[current_floor] and prec(current_floor, "in") != 0):
+        elif (state_doors == "closed" and direction == "up" and in_requests[current_floor] == -1 and prec(current_floor, "in") != -1):
             go_down()  # 10
-        elif (state_doors == "closed" and direction == "down" and out_requests[current_floor] and sig(current_floor, "out") != 0):
+        elif (state_doors == "closed" and direction == "down" and not out_requests[current_floor] and sig(current_floor, "out") != -1):
             go_up()  # 11
-        elif (state_doors == "closed" and direction == "down" and in_requests[current_floor] and sig(current_floor, "in") != 0):
+        elif (state_doors == "closed" and direction == "down" and in_requests[current_floor] == -1 and sig(current_floor, "in") != -1):
             go_up()  # 12
+        else:
+            break
+
+
+elevator()
