@@ -1,6 +1,7 @@
 package practica1;
 
 import java.security.DigestInputStream;
+import java.util.Arrays;
 
 public class Elevator {
 
@@ -26,6 +27,11 @@ public class Elevator {
     /* Function that implements the elevator's behaviour */
     public void run() {
         while (true) {
+            System.out.println("Current floor: " + currentFloor);
+            System.out.println("Direction: " + direction);
+            System.out.println("In: " + Arrays.toString(requests.in));
+            System.out.println("Out: " + Arrays.toString(requests.out));
+            System.out.println("Direction: " + Arrays.toString(requests.direction));
             if (!doorOpened && direction == Direction.UP
                     && (requests.direction[currentFloor] == Direction.UP || requests.out[currentFloor]
                             || (currentFloor == N_FLOORS - 1 && requests.in[currentFloor] != -1))) {

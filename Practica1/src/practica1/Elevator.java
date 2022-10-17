@@ -26,14 +26,9 @@ public class Elevator {
     /* Function that implements the elevator's behaviour */
     public void run() {
         while (true) {
-//            System.out.println("Current floor: " + currentFloor);
-//            System.out.println("Direction: " + direction);
-//            System.out.println("In: " + Arrays.toString(requests.in));
-//            System.out.println("Out: " + Arrays.toString(requests.out));
-//            System.out.println("Direction: " + Arrays.toString(requests.direction));
             if (!doorOpened && direction == Direction.UP
                     && (requests.direction[currentFloor] == Direction.UP || requests.out[currentFloor]
-                            || (currentFloor == N_FLOORS - 1 && requests.in[currentFloor] != -1))) {
+                    || (currentFloor == N_FLOORS - 1 && requests.in[currentFloor] != -1))) {
                 openDoor();
                 waitDelta();
                 closeDoor();
@@ -58,14 +53,14 @@ public class Elevator {
                     && nextAbove(OUT) != -1) {
                 goUp();
             } else if (!doorOpened && direction == Direction.UP && requests.direction[currentFloor] == Direction.NONE
-                    && nextAbove(IN) == -1) {
+                    && nextAbove(IN) != -1) {
                 goUp();
 
             } else if (!doorOpened && direction == Direction.DOWN && !requests.out[currentFloor]
                     && nextBelow(OUT) != -1) {
                 goDown();
             } else if (!doorOpened && direction == Direction.DOWN && requests.direction[currentFloor] == Direction.NONE
-                    && nextBelow(IN) == -1) {
+                    && nextBelow(IN) != -1) {
                 goDown();
             } else if (!doorOpened && direction == Direction.UP && !requests.out[currentFloor]
                     && nextBelow(OUT) != -1) {
@@ -87,14 +82,14 @@ public class Elevator {
 
     /* A1. Go to the floor above, unless it is the top floor */
     private void goUp() {
-        this.currentFloor--;
+        this.currentFloor++;
         this.direction = Direction.UP;
         System.out.println("Going up to floor " + this.currentFloor);
     }
 
     /* A2. Go to the floor below, unless it is the bottom floor */
     private void goDown() {
-        this.currentFloor++;
+        this.currentFloor--;
         this.direction = Direction.DOWN;
         System.out.println("Going down to floor " + this.currentFloor);
     }
@@ -126,7 +121,6 @@ public class Elevator {
     }
 
     /* Auxiliar Functions */
-
     // Returns the next higher floor for which there is an exit/entry request
     private int nextAbove(boolean in) {
         for (int i = currentFloor; i < N_FLOORS; i++) {
@@ -149,6 +143,7 @@ public class Elevator {
 
     /* Auxiliar Structures */
     public static class Requests {
+
         public int[] in; // -1 if no request, otherwise the number of the floor where they want to go
         public boolean[] out; // True if there is a passenger that wants to exit the elevator in that floor
         public Direction[] direction; // The direction of the passenger that wants to enter the elevator in that floor
