@@ -1,6 +1,5 @@
 package practica1;
 
-
 public class Elevator {
 
     /* Constats */
@@ -25,53 +24,66 @@ public class Elevator {
     /* Function that implements the elevator's behaviour */
     public void run() {
         while (true) {
+            // If it's going up AND (someone who is also going up wants to get in 
+            //      OR someone wants to get out in this floor OR (we're in the last floor AND someone wants to get in))
             if (!doorOpened && direction == Direction.UP
                     && (requests.direction[currentFloor] == Direction.UP || requests.out[currentFloor]
-                    || (currentFloor == N_FLOORS - 1 && requests.in[currentFloor] != -1))) {
+                        || (currentFloor == N_FLOORS - 1 && requests.in[currentFloor] != -1))) {
+                // Open and close doors
                 openDoor();
                 waitDelta();
                 closeDoor();
+                // Everyone got out, we don't have anymore out requests for this floor
                 requests.out[currentFloor] = false;
+                // If someone wants to get in, they'll press the corresponding out button
+                // We can also can unmark our internal arrays, since everyone got in
                 if (requests.in[currentFloor] != -1) {
                     requests.out[requests.in[currentFloor]] = true;
-                }
-                requests.in[currentFloor] = -1;
-                requests.direction[currentFloor] = Direction.NONE;
-            } else if (!doorOpened && direction == Direction.DOWN && (requests.direction[currentFloor] == Direction.DOWN
-                    || requests.out[currentFloor] || (currentFloor == 0 && requests.in[currentFloor] != -1))) {
-                openDoor();
-                waitDelta();
-                closeDoor();
-                requests.out[currentFloor] = false;
-                if (requests.in[currentFloor] != -1) {
-                    requests.out[requests.in[currentFloor]] = true;
-                }
-                requests.in[currentFloor] = -1;
-                requests.direction[currentFloor] = Direction.NONE;
-            } else if (!doorOpened && direction == Direction.UP && !requests.out[currentFloor]
-                    && nextAbove(OUT) != -1) {
-                goUp();
-            } else if (!doorOpened && direction == Direction.UP && requests.direction[currentFloor] == Direction.NONE
-                    && nextAbove(IN) != -1) {
-                goUp();
+                    requests.in[currentFloor] = -1;
+                    requests.direction[currentFloor] = Direction.NONE;
 
-            } else if (!doorOpened && direction == Direction.DOWN && !requests.out[currentFloor]
-                    && nextBelow(OUT) != -1) {
-                goDown();
-            } else if (!doorOpened && direction == Direction.DOWN && requests.direction[currentFloor] == Direction.NONE
-                    && nextBelow(IN) != -1) {
-                goDown();
-            } else if (!doorOpened && direction == Direction.UP && !requests.out[currentFloor]
-                    && nextBelow(OUT) != -1) {
-                goDown();
-            } else if (!doorOpened && direction == Direction.UP && requests.direction[currentFloor] == Direction.DOWN
-                    && nextBelow(IN) != -1) {
-                goDown();
-            } else if (!doorOpened && direction == Direction.DOWN && !requests.out[currentFloor]
-                    && nextAbove(OUT) != -1) {
+                }
+                // If it's going down AND (someone who is also going down wants to get in
+                //      OR someone wants to get out in this floor OR (we're in the first floor AND someone wants to get in))
+            } else if (!doorOpened && direction == Direction.DOWN 
+                    && (requests.direction[currentFloor] == Direction.DOWN || requests.out[currentFloor] 
+                        || (currentFloor == 0 && requests.in[currentFloor] != -1))) {
+                // Open and close doors
+                openDoor();
+                waitDelta();
+                closeDoor();
+                // Everyone got out, we don't have anymore requests for this floor
+                requests.out[currentFloor] = false;
+                // If someone wants to get in, they'll press the corresponding out button
+                // We can also can unmark our internal arrays, since everyone got in
+                if (requests.in[currentFloor] != -1) {
+                    requests.out[requests.in[currentFloor]] = true;
+                    requests.in[currentFloor] = -1;
+                    requests.direction[currentFloor] = Direction.NONE;
+                }
+                // If we're going up AND no one wants to get out AND there is a floor above where someone wants to get out --> GO_UP
+            } else if (!doorOpened && direction == Direction.UP && !requests.out[currentFloor] && nextAbove(OUT) != -1) {
                 goUp();
-            } else if (!doorOpened && direction == Direction.DOWN && requests.direction[currentFloor] == Direction.NONE
-                    && nextAbove(IN) != -1) {
+                // If we're going up AND no one wants to get in AND there is a floor above where someone wants to get in --> GO_UP
+            } else if (!doorOpened && direction == Direction.UP && requests.direction[currentFloor] == Direction.NONE && nextAbove(IN) != -1) {
+                goUp();
+                // If we're going down AND no one wants to get out AND there is a floor below where someone wants to get out --> GO_DOWN
+            } else if (!doorOpened && direction == Direction.DOWN && !requests.out[currentFloor] && nextBelow(OUT) != -1) {
+                goDown();
+                // If we're going down AND no one wants to get in AND there is a floor below where someone wants to get in --> GO_DOWN
+            } else if (!doorOpened && direction == Direction.DOWN && requests.direction[currentFloor] == Direction.NONE && nextBelow(IN) != -1) {
+                goDown();
+                // If we're going up AND no one wants to get out AND there is a floor below where someone wants to get out --> GO_DOWN
+            } else if (!doorOpened && direction == Direction.UP && !requests.out[currentFloor] && nextBelow(OUT) != -1) {
+                goDown();
+                // If we're going up AND no one wants to get in AND there is a floor below where someone wants to get in --> GO_DOWN
+            } else if (!doorOpened && direction == Direction.UP && requests.direction[currentFloor] == Direction.NONE && nextBelow(IN) != -1) {
+                goDown();
+                // If we're going down AND no one wants to get out && there is a floor above where someone wants to get out --> GO_UP
+            } else if (!doorOpened && direction == Direction.DOWN && !requests.out[currentFloor] && nextAbove(OUT) != -1) {
+                goUp();
+                // If we're going down AND no one wants to get in AND there is a floor above where someone wants to get in --> GO_DOWN                
+            } else if (!doorOpened && direction == Direction.DOWN && requests.direction[currentFloor] == Direction.NONE && nextAbove(IN) != -1) {
                 goUp();
             } else {
                 break;
