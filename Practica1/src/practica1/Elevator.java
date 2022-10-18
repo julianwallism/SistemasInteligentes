@@ -1,11 +1,10 @@
 package practica1;
 
-import java.util.Arrays;
 
 public class Elevator {
 
     /* Constats */
-    private static final int N_FLOORS = 11;
+    public static final int N_FLOORS = 8;
     private static final float DELTA = 0.5f; // in seconds
     private static final Boolean IN = true;
     private static final Boolean OUT = false;
