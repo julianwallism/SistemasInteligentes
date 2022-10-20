@@ -3,7 +3,7 @@ package practica1;
 public class Elevator {
 
     /* Constats */
-    public static final int N_FLOORS = 8;
+    public static final int N_FLOORS = 11;
     private static final float DELTA = 0.5f; // in seconds
     private static final Boolean IN = true;
     private static final Boolean OUT = false;
@@ -132,6 +132,12 @@ public class Elevator {
         
         private boolean checkBelow() {
             return !out[currentFloor] && nextBelow(OUT) || directions[currentFloor].isNone() && nextBelow(IN);
+        }
+        
+        public void setRequest(int origin, int destination){
+            in[origin] = destination;
+            out[origin] = true;
+            directions[origin] = destination - origin <= 0 ? Direction.DOWN : Direction.UP;
         }
     }
 

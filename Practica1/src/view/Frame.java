@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import practica1.Elevator;
 
@@ -36,7 +37,7 @@ public class Frame extends JFrame {
             openImage = openImage.getScaledInstance(ELEVATOR_WIDTH, ELEVATOR_HEIGHT, Image.SCALE_SMOOTH);
             closedImage = ImageIO.read(new File("assets/images/close.png"));
             closedImage = closedImage.getScaledInstance(ELEVATOR_WIDTH, ELEVATOR_HEIGHT, Image.SCALE_SMOOTH);
-            
+
             bluePerson = ImageIO.read(new File("assets/images/blue.png"));
             bluePerson = bluePerson.getScaledInstance(ELEVATOR_HEIGHT, ELEVATOR_HEIGHT, Image.SCALE_SMOOTH);
             redperson = ImageIO.read(new File("assets/images/red.png"));
@@ -110,8 +111,7 @@ public class Frame extends JFrame {
             for (int i = 0; i < persons.length; i++) {
                 ArrayList<Boolean> floor = persons[i];
                 for (int j = 0; j < floor.size(); j++) {
-                    boolean red = floor.get(j);
-                    g.drawImage(red ? redperson : bluePerson, ELEVATOR_WIDTH * (j + 1), PANEL_HEIGHT - (ELEVATOR_HEIGHT * (i + 1)), ELEVATOR_HEIGHT, ELEVATOR_HEIGHT, null);
+                    g.drawImage(floor.get(j) ? redperson : bluePerson, ELEVATOR_WIDTH * (j + 1), PANEL_HEIGHT - (ELEVATOR_HEIGHT * (i + 1)), ELEVATOR_HEIGHT, ELEVATOR_HEIGHT, null);
                 }
             }
         }
@@ -120,11 +120,23 @@ public class Frame extends JFrame {
 
             @Override
             public void mousePressed(MouseEvent e) {
-                int floor = Elevator.N_FLOORS - e.getY()/ELEVATOR_HEIGHT - 1;
-                // JDialog q pida piso y luego elegir bool en funcion si baja o sube enlugar de boton de raton
-                persons[floor].add(e.getButton() == MouseEvent.BUTTON1);
+                int floor = Elevator.N_FLOORS - e.getY() / ELEVATOR_HEIGHT - 1;
+                Object[] possibilities = new Integer[Elevator.N_FLOORS];
+                for(int i = 0; i < possibilities.length; i++){
+                    possibilities[i] = (Integer) i;
+                }
+                Object result = JOptionPane.showInputDialog(null,
+                        "Introduzca el piso de destino:",
+                        "Destino",
+                        JOptionPane.PLAIN_MESSAGE,
+                        null,
+                        possibilities,
+                        floor);
+                if(result == null) return;
+                int destination = (Integer) result;
+                if(destination == floor) return;
+                persons[floor].add(destination - floor <= 0);
                 repaint();
-
             }
 
         }
