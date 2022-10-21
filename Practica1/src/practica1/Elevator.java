@@ -1,10 +1,13 @@
 package practica1;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 public class Elevator {
 
     /* Constats */
     public static final int N_FLOORS = 11;
-    private static final float DELTA = 0.5f; // in seconds
+    private static final float DELTA = 0.1f; // in seconds
     private static final Boolean IN = true;
     private static final Boolean OUT = false;
 
@@ -20,7 +23,7 @@ public class Elevator {
         this.requests = new Requests();
         this.direction = Direction.UP;
     }
-    
+
     public void setRequests(Requests requests) {
         this.requests = requests;
     }
@@ -28,16 +31,62 @@ public class Elevator {
     /* Function that implements the elevator's behaviour */
     public void run() {
         while (true) {
-            if (doorOpened) continue;
+            // print requests.out array
+            if (doorOpened) {
+                continue;
+            }
             if (requests.checkFloor(Direction.UP) || requests.checkFloor(Direction.DOWN)) {
                 openDoor();
                 waitDelta();
                 closeDoor();
                 requests.out[currentFloor] = false;
-                if (requests.in[currentFloor] != -1) {
-                    requests.out[requests.in[currentFloor]] = true;
-                    requests.in[currentFloor] = -1;
-                    requests.directions[currentFloor] = Direction.NONE;
+//                System.out.println(currentFloor);
+//                System.out.println(requests.in[currentFloor]);
+                if (!requests.in[currentFloor].isEmpty()) {
+//                    System.out.println(currentFloor);
+//                    System.out.println(requests.directions[currentFloor]);
+                    if (requests.directions[currentFloor] == Direction.BOTH) {
+                        if (direction == Direction.UP) {
+                            for (int idx = 0; idx < requests.in[currentFloor].size(); idx++) {
+                                if (requests.in[currentFloor].get(idx) > currentFloor) {
+                                    requests.out[requests.in[currentFloor].get(idx)] = true;
+                                    requests.in[currentFloor].set(idx, -1);
+                                }
+                                requests.in[currentFloor].removeAll(new ArrayList<Integer>() {
+                                    {
+                                        add(-1);
+                                    }
+                                });
+                            }
+                            requests.directions[currentFloor] = Direction.DOWN;
+                        } else {
+                            for (int idx = 0; idx < requests.in[currentFloor].size(); idx++) {
+                                if (requests.in[currentFloor].get(idx) < currentFloor) {
+                                    requests.out[requests.in[currentFloor].get(idx)] = true;
+                                    requests.in[currentFloor].set(idx, -1);
+                                }
+                                requests.in[currentFloor].removeAll(new ArrayList<Integer>() {
+                                    {
+                                        add(-1);
+                                    }
+                                });
+                            }
+
+                            requests.directions[currentFloor] = Direction.UP;
+                        }
+                    } else {
+//                        System.out.println(currentFloor);
+//                        System.out.println(requests.in[currentFloor]);
+//                        System.out.println(requests.in[currentFloor].size());
+                        for (int idx = 0; idx < requests.in[currentFloor].size(); idx++) {
+//                            System.out.println(idx);
+//                            System.out.println(currentFloor);
+//                            System.out.println(requests.in[currentFloor].get(idx));
+                            requests.out[requests.in[currentFloor].get(idx)] = true;
+                        }
+                        requests.in[currentFloor].clear();
+                        requests.directions[currentFloor] = Direction.NONE;
+                    }
                 }
             } else if (!direction.isNone() && requests.checkAbove()) {
                 goUp();
@@ -93,7 +142,7 @@ public class Elevator {
     // Returns the next higher floor for which there is an exit/entry request
     private boolean nextAbove(boolean in) {
         for (int i = currentFloor; i < N_FLOORS; i++) {
-            if ((in && requests.in[i] != -1) || requests.out[i]) {
+            if ((in && !requests.in[i].isEmpty()) || requests.out[i]) {
                 return true;
             }
         }
@@ -103,7 +152,7 @@ public class Elevator {
     // Returns the next lower floor for which there is an exit/entry request
     private boolean nextBelow(boolean in) {
         for (int i = currentFloor; i >= 0; i--) {
-            if ((in && requests.in[i] != -1) || requests.out[i]) {
+            if ((in && !requests.in[i].isEmpty()) || requests.out[i]) {
                 return true;
             }
         }
@@ -113,29 +162,44 @@ public class Elevator {
     /* Auxiliar Structures */
     public class Requests {
 
-        public int[] in; // -1 if no request, otherwise the number of the floor where they want to go
+        // in is an array of arraylists of ints
+        public ArrayList<Integer>[] in = new ArrayList[N_FLOORS]; // -1 if no request, otherwise the number of the floor
+        // where
+        // they want to go
         public boolean[] out; // True if there is a passenger that wants to exit the elevator in that floor
         public Direction[] directions; // The direction of the passenger that wants to enter the elevator in that floor
-        
-        private boolean checkFloor(Direction dir){
-            if(dir == Direction.UP) {
-                return direction == dir && (directions[currentFloor] == dir || out[currentFloor] || (currentFloor == N_FLOORS - 1 && in[currentFloor] != -1));
-            } else if(dir == Direction.DOWN) {
-                return direction == dir && (directions[currentFloor] == dir || out[currentFloor] || (currentFloor == 0 && in[currentFloor] != -1));
+
+        private boolean checkFloor(Direction dir) {
+            if (dir == Direction.UP) {
+                return direction == dir
+                        && (directions[currentFloor] == dir 
+                                || directions[currentFloor] == Direction.BOTH
+                                || out[currentFloor] || (currentFloor == N_FLOORS - 1 && !in[currentFloor].isEmpty()));
+            } else if (dir == Direction.DOWN) {
+                return direction == dir
+                        && (directions[currentFloor] == dir
+                                || directions[currentFloor] == Direction.BOTH
+                                || out[currentFloor] || (currentFloor == 0 && !in[currentFloor].isEmpty()));
             }
             return false;
         }
-        
-        private boolean checkAbove(){
+
+        public Requests() {
+            for (int i = 0; i < N_FLOORS; i++) {
+                in[i] = new ArrayList<Integer>();
+            }
+        }
+
+        private boolean checkAbove() {
             return (!out[currentFloor] && nextAbove(OUT) || directions[currentFloor].isNone() && nextAbove(IN));
         }
-        
+
         private boolean checkBelow() {
             return !out[currentFloor] && nextBelow(OUT) || directions[currentFloor].isNone() && nextBelow(IN);
         }
-        
-        public void setRequest(int origin, int destination){
-            in[origin] = destination;
+
+        public void setRequest(int origin, int destination) {
+            in[origin].add(destination);
             out[origin] = true;
             directions[origin] = destination - origin <= 0 ? Direction.DOWN : Direction.UP;
         }
@@ -144,6 +208,7 @@ public class Elevator {
     public enum Direction {
         UP,
         DOWN,
+        BOTH,
         NONE;
 
         public boolean isNone() {
