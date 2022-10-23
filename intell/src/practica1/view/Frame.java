@@ -23,7 +23,7 @@ public class Frame extends JFrame {
     /* Constants */
     private static final int PANEL_WIDTH = 600, PANEL_HEIGHT = 600;
     private static final int ELEVATOR_WIDTH = 60, ELEVATOR_HEIGHT = PANEL_HEIGHT / Elevator.N_FLOORS;
-    private static final int BUTTON_WIDTH = ELEVATOR_HEIGHT/2, BUTTON_HEIGHT = ELEVATOR_HEIGHT/2;
+    private static final int BUTTON_WIDTH = ELEVATOR_HEIGHT / 2, BUTTON_HEIGHT = ELEVATOR_HEIGHT / 2;
 
     private Panel panel;
     private Image openImage, closedImage;
@@ -87,11 +87,11 @@ public class Frame extends JFrame {
         int floor = -1;
         Elevator.Direction dir = Elevator.Direction.NONE;
         for (int i = 0; i < Elevator.N_FLOORS; i++) {
-            if(e.getY() >= (i) * ELEVATOR_HEIGHT + ELEVATOR_HEIGHT/4 && e.getY() < (i) * ELEVATOR_HEIGHT + ELEVATOR_HEIGHT/4 + ELEVATOR_HEIGHT/2) {
-                if(e.getX() >= PANEL_WIDTH/2 - 3*ELEVATOR_HEIGHT/2 && e.getX() < PANEL_WIDTH/2 - 3*ELEVATOR_HEIGHT/2 + ELEVATOR_HEIGHT/2) {
+            if (e.getY() >= (i) * ELEVATOR_HEIGHT + ELEVATOR_HEIGHT / 4 && e.getY() < (i) * ELEVATOR_HEIGHT + ELEVATOR_HEIGHT / 4 + ELEVATOR_HEIGHT / 2) {
+                if (e.getX() >= PANEL_WIDTH / 2 - 3 * ELEVATOR_HEIGHT / 2 && e.getX() < PANEL_WIDTH / 2 - 3 * ELEVATOR_HEIGHT / 2 + ELEVATOR_HEIGHT / 2) {
                     floor = Elevator.N_FLOORS - i - 1;
                     dir = Elevator.Direction.DOWN;
-                } else if(e.getX() >= PANEL_WIDTH/2 + ELEVATOR_HEIGHT && e.getX() < PANEL_WIDTH/2 + ELEVATOR_HEIGHT + ELEVATOR_HEIGHT/2) {
+                } else if (e.getX() >= PANEL_WIDTH / 2 + ELEVATOR_HEIGHT && e.getX() < PANEL_WIDTH / 2 + ELEVATOR_HEIGHT + ELEVATOR_HEIGHT / 2) {
                     floor = Elevator.N_FLOORS - i - 1;
                     dir = Elevator.Direction.UP;
                 }
@@ -106,10 +106,15 @@ public class Frame extends JFrame {
         panel.repaint();
     }
 
+    public void openDoor(boolean open) {
+        panel.opened = open;
+        panel.repaint();
+    }
+
 
     public class Panel extends JPanel {
         private int currentFloor = 0;
-        private boolean opened = true;
+        private boolean opened = false;
 
         public Panel() {
             setPreferredSize(new Dimension(PANEL_WIDTH, PANEL_HEIGHT));
@@ -125,23 +130,27 @@ public class Frame extends JFrame {
             drawElevator(graphics, opened ? openImage : closedImage);
             drawPersons(graphics);
         }
+
         private void drawBackgrounds(Graphics2D g) {
             g.setStroke(new BasicStroke(1.5f));
-            g.drawRect(PANEL_WIDTH/2 - ELEVATOR_WIDTH/2, 0, ELEVATOR_WIDTH + 1, PANEL_HEIGHT);
+            g.drawRect(PANEL_WIDTH / 2 - ELEVATOR_WIDTH / 2, 0, ELEVATOR_WIDTH + 1, PANEL_HEIGHT);
             g.setColor(new Color(150, 75, 0));
-            g.fillRect(PANEL_WIDTH/2 - ELEVATOR_WIDTH/2, 0, ELEVATOR_WIDTH + 1, PANEL_HEIGHT);
+            g.fillRect(PANEL_WIDTH / 2 - ELEVATOR_WIDTH / 2, 0, ELEVATOR_WIDTH + 1, PANEL_HEIGHT);
         }
+
         private void drawFloors(Graphics2D g) {
             g.setColor(Color.black);
             for (int i = 0; i < Elevator.N_FLOORS; i++) {
                 g.drawLine(0, i * ELEVATOR_HEIGHT, PANEL_WIDTH, i * ELEVATOR_HEIGHT);
-                g.drawRect(PANEL_WIDTH/2 - 3*ELEVATOR_HEIGHT/2, (i) * ELEVATOR_HEIGHT + ELEVATOR_HEIGHT/4, ELEVATOR_HEIGHT/2, ELEVATOR_HEIGHT/2);
-                g.drawRect(PANEL_WIDTH/2 + ELEVATOR_HEIGHT, (i) * ELEVATOR_HEIGHT + ELEVATOR_HEIGHT/4, ELEVATOR_HEIGHT/2, ELEVATOR_HEIGHT/2);
+                g.drawRect(PANEL_WIDTH / 2 - 3 * ELEVATOR_HEIGHT / 2, (i) * ELEVATOR_HEIGHT + ELEVATOR_HEIGHT / 4, ELEVATOR_HEIGHT / 2, ELEVATOR_HEIGHT / 2);
+                g.drawRect(PANEL_WIDTH / 2 + ELEVATOR_HEIGHT, (i) * ELEVATOR_HEIGHT + ELEVATOR_HEIGHT / 4, ELEVATOR_HEIGHT / 2, ELEVATOR_HEIGHT / 2);
             }
         }
+
         private void drawElevator(Graphics2D g, Image image) {
-            g.drawImage(image, PANEL_WIDTH/2 - ELEVATOR_WIDTH/2, PANEL_HEIGHT - (ELEVATOR_HEIGHT * (currentFloor + 1)), ELEVATOR_WIDTH, ELEVATOR_HEIGHT, null);
+            g.drawImage(image, PANEL_WIDTH / 2 - ELEVATOR_WIDTH / 2, PANEL_HEIGHT - (ELEVATOR_HEIGHT * (currentFloor + 1)), ELEVATOR_WIDTH, ELEVATOR_HEIGHT, null);
         }
+
         private void drawPersons(Graphics2D g) {
 //            for (int i = 0; i < persons.length; i++) {
 //                ArrayList<Boolean> floor = persons[i];

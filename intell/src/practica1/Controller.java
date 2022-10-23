@@ -24,8 +24,9 @@ public class Controller {
 
     private void modelListener(PropertyChangeEvent evt) {
         if(evt.getPropertyName() == "moving") {
-            System.out.println("moving");
             view.moveElevator((Elevator.Direction) evt.getNewValue());
+        } else if(evt.getPropertyName()=="door"){
+            view.openDoor((boolean) evt.getNewValue());
         }
     }
 
