@@ -11,10 +11,12 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.util.Timer;
 
 import practica1.Elevator;
 
@@ -36,11 +38,6 @@ public class Frame extends JFrame {
             openImage = openImage.getScaledInstance(ELEVATOR_WIDTH, ELEVATOR_HEIGHT, Image.SCALE_SMOOTH);
             closedImage = ImageIO.read(new File("assets/images/close.png"));
             closedImage = closedImage.getScaledInstance(ELEVATOR_WIDTH, ELEVATOR_HEIGHT, Image.SCALE_SMOOTH);
-
-//            bluePerson = ImageIO.read(new File("assets/images/blue.png"));
-//            bluePerson = bluePerson.getScaledInstance(ELEVATOR_HEIGHT, ELEVATOR_HEIGHT, Image.SCALE_SMOOTH);
-//            redperson = ImageIO.read(new File("assets/images/red.png"));
-//            redperson = redperson.getScaledInstance(ELEVATOR_HEIGHT, ELEVATOR_HEIGHT, Image.SCALE_SMOOTH);
         } catch (IOException ex) {
             Logger.getLogger(Frame.class.getName()).log(Level.SEVERE, null, ex);
             return;
@@ -64,19 +61,8 @@ public class Frame extends JFrame {
             upButtons[i] = new JButton("\u8593");
         }
 
-        addComponents();
         setResizable(false);
         setLocationRelativeTo(null);
-    }
-
-    private void addComponents() {
-        for (int i = 0; i < 2; i++) {
-//            add(downButtons[i]);
-//            //add(upButtons[i]);
-//            downButtons[i].setBounds(PANEL_WIDTH/2 - 3*ELEVATOR_HEIGHT/2, (i) * ELEVATOR_HEIGHT + ELEVATOR_HEIGHT/4, ELEVATOR_HEIGHT/2, ELEVATOR_HEIGHT/2);
-//            //upButtons[i].setBounds();
-//            downButtons[i].repaint();
-        }
     }
 
     public void addListener(MouseAdapter adapter) {
@@ -102,8 +88,8 @@ public class Frame extends JFrame {
     }
 
     public void moveElevator(Elevator.Direction dir) {
-        panel.currentFloor++;
-        panel.repaint();
+        Timer timer = new Timer();
+        timer.scheduleAtFixedRate(panel.new Animator(dir), 0, 25);
     }
 
     public void openDoor(boolean open) {
@@ -113,7 +99,7 @@ public class Frame extends JFrame {
 
 
     public class Panel extends JPanel {
-        private int currentFloor = 0;
+        private int elevatorY = 0, nextFloor = 0;
         private boolean opened = false;
 
         public Panel() {
@@ -148,7 +134,7 @@ public class Frame extends JFrame {
         }
 
         private void drawElevator(Graphics2D g, Image image) {
-            g.drawImage(image, PANEL_WIDTH / 2 - ELEVATOR_WIDTH / 2, PANEL_HEIGHT - (ELEVATOR_HEIGHT * (currentFloor + 1)), ELEVATOR_WIDTH, ELEVATOR_HEIGHT, null);
+            g.drawImage(image, PANEL_WIDTH / 2 - ELEVATOR_WIDTH / 2, PANEL_HEIGHT - (ELEVATOR_HEIGHT + elevatorY), ELEVATOR_WIDTH, ELEVATOR_HEIGHT, null);
         }
 
         private void drawPersons(Graphics2D g) {
@@ -158,6 +144,32 @@ public class Frame extends JFrame {
 //                    g.drawImage(floor.get(j) ? redperson : bluePerson, ELEVATOR_WIDTH * (j + 1), PANEL_HEIGHT - (ELEVATOR_HEIGHT * (i + 1)), ELEVATOR_HEIGHT, ELEVATOR_HEIGHT, null);
 //                }
 //            }
+        }
+
+        private class Animator extends TimerTask {
+
+            private Elevator.Direction dir;
+
+            public Animator(Elevator.Direction dir) {
+                this.dir = dir;
+                if(dir == Elevator.Direction.UP){
+                    panel.nextFloor = Math.min(Elevator.N_FLOORS, panel.nextFloor + 1);
+                } else if(dir == Elevator.Direction.DOWN) {
+                    panel.nextFloor = Math.max(0, panel.nextFloor - 1);
+                }
+            }
+
+            @Override
+            public void run() {
+                if(dir == Elevator.Direction.UP && elevatorY/ELEVATOR_HEIGHT < nextFloor) {
+                    elevatorY += 1;
+                } else if(dir == Elevator.Direction.DOWN && elevatorY/ELEVATOR_HEIGHT >= nextFloor)
+                    elevatorY -= 1;
+                else {
+                    cancel();
+                }
+                repaint();
+            }
         }
     }
 }

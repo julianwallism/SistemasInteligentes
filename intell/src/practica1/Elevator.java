@@ -4,12 +4,13 @@ import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Elevator extends AbstractModel {
+public class Elevator extends AbstractModel implements Runnable{
 
     /* Constats */
     public static final int N_FLOORS = 11;
-    private static final float DELTA = 2f; // in seconds
+    private static final float DELTA = 1; // in seconds
     private static final Boolean IN = true;
+
     private static final Boolean OUT = false;
 
     /* State Variables */
@@ -30,6 +31,7 @@ public class Elevator extends AbstractModel {
     }
 
     /* Function that implements the elevator's behaviour */
+    @Override
     public void run() {
         while (true) {
             // print requests.out array
@@ -141,6 +143,7 @@ public class Elevator extends AbstractModel {
         this.direction = Direction.UP;
         firePropertyChange("moving", null, Direction.UP);
         System.out.println("Going up to floor " + this.currentFloor);
+        waitDelta();
     }
 
     /* A2. Go to the floor below, unless it is the bottom floor */
@@ -149,6 +152,7 @@ public class Elevator extends AbstractModel {
         this.direction = Direction.DOWN;
         firePropertyChange("moving", null, Direction.DOWN);
         System.out.println("Going down to floor " + this.currentFloor);
+        waitDelta();
     }
 
     /* A3. Open the door */
@@ -172,7 +176,7 @@ public class Elevator extends AbstractModel {
      */
     private void waitDelta() {
         try {
-            System.out.println("Waiting for " + DELTA + " seconds");
+            //System.out.println("Waiting for " + DELTA + " seconds");
             Thread.sleep((long) (DELTA * 1000));
         } catch (InterruptedException ex) {
             System.err.println(ex.getMessage());
