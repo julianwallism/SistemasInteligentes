@@ -29,7 +29,7 @@ public class Frame extends JFrame {
 
     private Panel panel;
     private Image openImage, closedImage;
-    private Image bluePerson, redperson;
+    private Image bluePerson, redPerson;
     private JButton[] downButtons, upButtons;
 
     public Frame() {
@@ -38,6 +38,11 @@ public class Frame extends JFrame {
             openImage = openImage.getScaledInstance(ELEVATOR_WIDTH, ELEVATOR_HEIGHT, Image.SCALE_SMOOTH);
             closedImage = ImageIO.read(new File("assets/images/close.png"));
             closedImage = closedImage.getScaledInstance(ELEVATOR_WIDTH, ELEVATOR_HEIGHT, Image.SCALE_SMOOTH);
+
+            redPerson = ImageIO.read(new File("assets/images/red.png"));
+            redPerson = redPerson.getScaledInstance(ELEVATOR_WIDTH/2, ELEVATOR_HEIGHT, Image.SCALE_SMOOTH);
+            bluePerson = ImageIO.read(new File("assets/images/blue.png"));
+            bluePerson = bluePerson.getScaledInstance(ELEVATOR_WIDTH/2, ELEVATOR_HEIGHT, Image.SCALE_SMOOTH);
         } catch (IOException ex) {
             Logger.getLogger(Frame.class.getName()).log(Level.SEVERE, null, ex);
             return;
@@ -97,10 +102,47 @@ public class Frame extends JFrame {
         panel.repaint();
     }
 
+    public void drawPersons(int[][] count){
+        panel.personCount = count;
+        panel.repaint();
+    }
+
+    public int[] askFloors(Elevator.Direction dir, int floor, int count) {
+        panel.personCount[floor][dir.getInt()] = 0;
+        Object[] possibilities = null;
+        if(dir == Elevator.Direction.UP) {
+            System.out.println("up");
+            possibilities = new Integer[Elevator.N_FLOORS - floor];
+            for (int i = 0; i < possibilities.length; i++) {
+                possibilities[i] = floor + i;
+            }
+        } else if(dir == Elevator.Direction.DOWN) {
+            System.out.println("down");
+            possibilities = new Integer[floor];
+            for (int i = 0; i < possibilities.length; i++) {
+                possibilities[i] = i;
+            }
+        }
+        int[] floors = new int[count];
+        for (int i = 0; i < count; i++) {
+            Object result = JOptionPane.showInputDialog(null,
+                    "Introduzca el piso de destino:",
+                    "Destino",
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    possibilities,
+                    floor);
+            if(result != null && result instanceof Integer value){
+                floors[i] = value;
+            }
+        }
+        return floors;
+    }
 
     public class Panel extends JPanel {
         private int elevatorY = 0, nextFloor = 0;
         private boolean opened = false;
+        private int[][] personCount = new int[Elevator.N_FLOORS][2];
 
         public Panel() {
             setPreferredSize(new Dimension(PANEL_WIDTH, PANEL_HEIGHT));
@@ -138,12 +180,16 @@ public class Frame extends JFrame {
         }
 
         private void drawPersons(Graphics2D g) {
-//            for (int i = 0; i < persons.length; i++) {
-//                ArrayList<Boolean> floor = persons[i];
-//                for (int j = 0; j < floor.size(); j++) {
-//                    g.drawImage(floor.get(j) ? redperson : bluePerson, ELEVATOR_WIDTH * (j + 1), PANEL_HEIGHT - (ELEVATOR_HEIGHT * (i + 1)), ELEVATOR_HEIGHT, ELEVATOR_HEIGHT, null);
-//                }
-//            }
+            for (int i = 0; i < personCount.length; i++) {
+                int down = personCount[i][0];
+                int up = personCount[i][1];
+                for (int j = 0; j < down; j++) {
+                    g.drawImage(redPerson, PANEL_WIDTH / 2 - 3 * ELEVATOR_WIDTH / 2 - (ELEVATOR_WIDTH  * (j + 1)/ 2 ), PANEL_HEIGHT - (ELEVATOR_HEIGHT * (i + 1)), ELEVATOR_HEIGHT/2, ELEVATOR_HEIGHT, null);
+                }
+                for (int j = 0; j < up; j++) {
+                    g.drawImage(bluePerson, PANEL_WIDTH / 2 + ELEVATOR_WIDTH + (ELEVATOR_WIDTH  * (j + 1)/ 2 ), PANEL_HEIGHT - (ELEVATOR_HEIGHT * (i + 1)), ELEVATOR_HEIGHT/2, ELEVATOR_HEIGHT, null);
+                }
+            }
         }
 
         private class Animator extends TimerTask {

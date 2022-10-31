@@ -4,7 +4,7 @@ import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Elevator extends AbstractModel implements Runnable{
+public class Elevator extends AbstractModel implements Runnable {
 
     /* Constats */
     public static final int N_FLOORS = 11;
@@ -39,74 +39,60 @@ public class Elevator extends AbstractModel implements Runnable{
                 continue;
             }
             // If it's going up AND (someone who is also going up wants to get in
-            //      OR someone wants to get out in this floor OR (we're in the last floor AND someone wants to get in))
+            //      OR someone wants to get out in this floor OR (someone wants to get in AND no one wants to get out on a floor above))
+            System.out.println(direction);
             if (direction == Direction.UP
                     && (requests.directions[currentFloor] == Direction.UP || requests.out[currentFloor]
                     || (requests.directions[currentFloor] == Direction.DOWN && !nextAbove(OUT)))) {
+                System.out.println("IM TRYING TO OPEN THE DOORS");
                 // Open and close doors
-                openDoor();
-                waitDelta();
-                closeDoor();
                 // Everyone got out, we don't have anymore out requests for this floor
                 requests.out[currentFloor] = false;
                 // If someone wants to get in, they'll press the corresponding out button
                 // We can also can unmark our internal arrays, since everyone got in
-                if (requests.directions[currentFloor] == Direction.BOTH) {
-                    for (int idx = 0; idx < requests.in[currentFloor].size(); idx++) {
-                        if (requests.in[currentFloor].get(idx) > currentFloor) {
-                            requests.out[requests.in[currentFloor].get(idx)] = true;
-                            requests.in[currentFloor].set(idx, -1);
-                        }
-                        requests.in[currentFloor].removeAll(new ArrayList<Integer>() {
-                            {
-                                add(-1);
-                            }
-                        });
+                switch (requests.directions[currentFloor]) {
+                    case UP -> {
+                        stopAtFloor(Direction.UP, true);
+                        requests.directions[currentFloor] = Direction.NONE;
                     }
-                    requests.directions[currentFloor] = Direction.DOWN;
-                } else if (requests.directions[currentFloor] != Direction.NONE) {
-                    for (int idx = 0; idx < requests.in[currentFloor].size(); idx++) {
-                        requests.out[requests.in[currentFloor].get(idx)] = true;
-                        // Send notification to view, to show jdialogs so the user can enter the floor they want to go
+                    case DOWN -> {
+                        stopAtFloor(Direction.DOWN, true);
+                        requests.directions[currentFloor] = Direction.NONE;
                     }
-                    requests.in[currentFloor].clear();
-                    requests.directions[currentFloor] = Direction.NONE;
+                    case BOTH -> {
+                        stopAtFloor(Direction.UP, true);
+                        requests.directions[currentFloor] = Direction.DOWN;
+                    }
+                    case NONE -> {
+                        stopAtFloor(Direction.NONE, false);
+                    }
                 }
-
                 // If it's going down AND (someone who is also going down wants to get in
                 //      OR someone wants to get out in this floor OR (we're in the first floor AND someone wants to get in))
             } else if (direction == Direction.DOWN
                     && (requests.directions[currentFloor] == Direction.DOWN || requests.out[currentFloor]
                     || (requests.directions[currentFloor] == Direction.UP && !nextBelow(OUT)))) {
-                // Open and close doors
-                openDoor();
-                waitDelta();
-                closeDoor();
                 // Everyone got out, we don't have anymore requests for this floor
                 requests.out[currentFloor] = false;
                 // If someone wants to get in, they'll press the corresponding out button
                 // We can also can unmark our internal arrays, since everyone got in
-                if (requests.directions[currentFloor] == Direction.BOTH) {
-                    for (int idx = 0; idx < requests.in[currentFloor].size(); idx++) {
-                        if (requests.in[currentFloor].get(idx) < currentFloor) {
-                            requests.out[requests.in[currentFloor].get(idx)] = true;
-                            requests.in[currentFloor].set(idx, -1);
-                        }
-                        requests.in[currentFloor].removeAll(new ArrayList<Integer>() {
-                            {
-                                add(-1);
-                            }
-                        });
+                switch (requests.directions[currentFloor]) {
+                    case UP -> {
+                        stopAtFloor(Direction.UP, true);
+                        requests.directions[currentFloor] = Direction.NONE;
                     }
-                    requests.directions[currentFloor] = Direction.UP;
-                } else if (requests.directions[currentFloor] != Direction.NONE) {
-                    for (int idx = 0; idx < requests.in[currentFloor].size(); idx++) {
-                        requests.out[requests.in[currentFloor].get(idx)] = true;
+                    case DOWN -> {
+                        stopAtFloor(Direction.DOWN, true);
+                        requests.directions[currentFloor] = Direction.NONE;
                     }
-                    requests.in[currentFloor].clear();
-                    requests.directions[currentFloor] = Direction.NONE;
+                    case BOTH -> {
+                        stopAtFloor(Direction.UP, true);
+                        requests.directions[currentFloor] = Direction.DOWN;
+                    }
+                    case NONE -> {
+                        stopAtFloor(Direction.NONE, false);
+                    }
                 }
-
                 // If we're going up AND no one wants to get out AND there is a floor above where someone wants to get out --> GO_UP
             } else if (direction == Direction.UP && !requests.out[currentFloor] && nextAbove(OUT)) {
                 goUp();
@@ -135,6 +121,15 @@ public class Elevator extends AbstractModel implements Runnable{
                 break;
             }
         }
+    }
+
+    private void stopAtFloor(Direction dir, boolean ask) {
+        openDoor();
+        if(ask)
+            firePropertyChange("floor", dir, requests.count[currentFloor][dir.getInt()]);
+        else
+            waitDelta();
+        closeDoor();
     }
 
     /* A1. Go to the floor above, unless it is the top floor */
@@ -187,7 +182,6 @@ public class Elevator extends AbstractModel implements Runnable{
     // Returns the next higher floor for which there is an exit/entry request
     private boolean nextAbove(boolean in) {
         for (int i = currentFloor; i < N_FLOORS; i++) {
-
             if ((in && requests.directions[i] != Direction.NONE) || requests.out[i]) {
                 return true;
             }
@@ -205,6 +199,24 @@ public class Elevator extends AbstractModel implements Runnable{
         return false;
     }
 
+    public int[][] getRequestCount() {
+        return this.requests.count;
+    }
+
+    public Direction getDirection() {
+        return this.direction;
+    }
+
+    public int getCurrentFloor() {
+        return this.currentFloor;
+    }
+
+    public void addFloorDestinations(int[] floors) {
+        for (int i = 0; i < floors.length; i++) {
+            requests.out[floors[i]] = true;
+        }
+    }
+
     /* Auxiliar Structures */
     public class Requests {
 
@@ -215,9 +227,12 @@ public class Elevator extends AbstractModel implements Runnable{
         public boolean[] out; // True if there is a passenger that wants to exit the elevator in that floor
         public Direction[] directions; // The direction of the passenger that wants to enter the elevator in that floor
 
+        private int[][] count;
+
         public Requests() {
             in = new ArrayList[N_FLOORS];
             out = new boolean[N_FLOORS];
+            count = new int[N_FLOORS][2];
             directions = new Direction[N_FLOORS];
             for (int i = 0; i < N_FLOORS; i++) {
                 in[i] = new ArrayList<Integer>();
@@ -227,6 +242,7 @@ public class Elevator extends AbstractModel implements Runnable{
         }
 
         public void add(Request request) {
+            count[request.floor][request.direction.getInt()]++;
             if (directions[request.floor] != Direction.NONE && directions[request.floor] != direction) {
                 directions[request.floor] = Direction.BOTH;
             } else {
@@ -260,5 +276,17 @@ public class Elevator extends AbstractModel implements Runnable{
         DOWN,
         BOTH,
         NONE;
+
+        public int getInt() {
+            switch (this) {
+                case DOWN -> {
+                    return 0;
+                }
+                case UP -> {
+                    return 1;
+                }
+            }
+            return -1;
+        }
     }
 }

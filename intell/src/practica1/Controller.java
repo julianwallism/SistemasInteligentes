@@ -26,8 +26,12 @@ public class Controller {
     private void modelListener(PropertyChangeEvent evt) {
         if(evt.getPropertyName() == "moving") {
             view.moveElevator((Elevator.Direction) evt.getNewValue());
-        } else if(evt.getPropertyName()=="door"){
+        } else if(evt.getPropertyName() == "door"){
             view.openDoor((boolean) evt.getNewValue());
+        } else if(evt.getPropertyName() == "floor") {
+            System.out.println("Asking floors");
+            int[] floors = view.askFloors((Elevator.Direction) evt.getOldValue(),  model.getCurrentFloor(), (int) evt.getNewValue());
+            model.addFloorDestinations(floors);
         }
     }
 
@@ -37,8 +41,8 @@ public class Controller {
         public void mousePressed(MouseEvent e) {
             Elevator.Request request = view.getRequest(e);
             if(!request.isValid()) return;
-            System.out.println(request);
             model.requests.add(request);
+            view.drawPersons(model.getRequestCount());
             if(thread == null || !thread.isAlive()){
                 thread = new Thread(model);
                 thread.start();
