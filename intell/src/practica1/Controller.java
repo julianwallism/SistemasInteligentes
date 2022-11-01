@@ -29,7 +29,6 @@ public class Controller {
         } else if(evt.getPropertyName() == "door"){
             view.openDoor((boolean) evt.getNewValue());
         } else if(evt.getPropertyName() == "floor") {
-            System.out.println("Asking floors");
             int[] floors = view.askFloors((Elevator.Direction) evt.getOldValue(),  model.getCurrentFloor(), (int) evt.getNewValue());
             model.addFloorDestinations(floors);
         }

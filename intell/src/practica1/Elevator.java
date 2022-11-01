@@ -3,6 +3,7 @@ package practica1;
 import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class Elevator extends AbstractModel implements Runnable {
 
@@ -40,7 +41,6 @@ public class Elevator extends AbstractModel implements Runnable {
             }
             // If it's going up AND (someone who is also going up wants to get in
             //      OR someone wants to get out in this floor OR (someone wants to get in AND no one wants to get out on a floor above))
-            System.out.println(direction);
             if (direction == Direction.UP
                     && (requests.directions[currentFloor] == Direction.UP || requests.out[currentFloor]
                     || (requests.directions[currentFloor] == Direction.DOWN && !nextAbove(OUT)))) {
@@ -128,7 +128,7 @@ public class Elevator extends AbstractModel implements Runnable {
         if(ask)
             firePropertyChange("floor", dir, requests.count[currentFloor][dir.getInt()]);
         else
-            waitDelta();
+            waitDelta(true);
         closeDoor();
     }
 
@@ -138,7 +138,7 @@ public class Elevator extends AbstractModel implements Runnable {
         this.direction = Direction.UP;
         firePropertyChange("moving", null, Direction.UP);
         System.out.println("Going up to floor " + this.currentFloor);
-        waitDelta();
+        waitDelta(false);
     }
 
     /* A2. Go to the floor below, unless it is the bottom floor */
@@ -147,7 +147,7 @@ public class Elevator extends AbstractModel implements Runnable {
         this.direction = Direction.DOWN;
         firePropertyChange("moving", null, Direction.DOWN);
         System.out.println("Going down to floor " + this.currentFloor);
-        waitDelta();
+        waitDelta(false);
     }
 
     /* A3. Open the door */
@@ -169,10 +169,10 @@ public class Elevator extends AbstractModel implements Runnable {
      * A5. Wait for DELTA seconds, to simulate the time it takes for the passengers
      * to enter/exit the elevator
      */
-    private void waitDelta() {
+    private void waitDelta(Boolean opening) {
+        int num = opening ? 1000 : 250;
         try {
-            //System.out.println("Waiting for " + DELTA + " seconds");
-            Thread.sleep((long) (DELTA * 1000));
+            Thread.sleep((long) (DELTA * num));
         } catch (InterruptedException ex) {
             System.err.println(ex.getMessage());
         }
@@ -230,12 +230,10 @@ public class Elevator extends AbstractModel implements Runnable {
         private int[][] count;
 
         public Requests() {
-            in = new ArrayList[N_FLOORS];
             out = new boolean[N_FLOORS];
             count = new int[N_FLOORS][2];
             directions = new Direction[N_FLOORS];
             for (int i = 0; i < N_FLOORS; i++) {
-                in[i] = new ArrayList<Integer>();
                 directions[i] = Direction.NONE;
             }
 
@@ -243,7 +241,7 @@ public class Elevator extends AbstractModel implements Runnable {
 
         public void add(Request request) {
             count[request.floor][request.direction.getInt()]++;
-            if (directions[request.floor] != Direction.NONE && directions[request.floor] != direction) {
+            if (directions[request.floor] != Direction.NONE && directions[request.floor] != request.direction) {
                 directions[request.floor] = Direction.BOTH;
             } else {
                 directions[request.floor] = request.direction;

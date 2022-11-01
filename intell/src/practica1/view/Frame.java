@@ -10,6 +10,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -40,9 +41,9 @@ public class Frame extends JFrame {
             closedImage = closedImage.getScaledInstance(ELEVATOR_WIDTH, ELEVATOR_HEIGHT, Image.SCALE_SMOOTH);
 
             redPerson = ImageIO.read(new File("assets/images/red.png"));
-            redPerson = redPerson.getScaledInstance(ELEVATOR_WIDTH/2, ELEVATOR_HEIGHT, Image.SCALE_SMOOTH);
+            redPerson = redPerson.getScaledInstance(ELEVATOR_WIDTH / 2, ELEVATOR_HEIGHT, Image.SCALE_SMOOTH);
             bluePerson = ImageIO.read(new File("assets/images/blue.png"));
-            bluePerson = bluePerson.getScaledInstance(ELEVATOR_WIDTH/2, ELEVATOR_HEIGHT, Image.SCALE_SMOOTH);
+            bluePerson = bluePerson.getScaledInstance(ELEVATOR_WIDTH / 2, ELEVATOR_HEIGHT, Image.SCALE_SMOOTH);
         } catch (IOException ex) {
             Logger.getLogger(Frame.class.getName()).log(Level.SEVERE, null, ex);
             return;
@@ -102,7 +103,7 @@ public class Frame extends JFrame {
         panel.repaint();
     }
 
-    public void drawPersons(int[][] count){
+    public void drawPersons(int[][] count) {
         panel.personCount = count;
         panel.repaint();
     }
@@ -110,14 +111,12 @@ public class Frame extends JFrame {
     public int[] askFloors(Elevator.Direction dir, int floor, int count) {
         panel.personCount[floor][dir.getInt()] = 0;
         Object[] possibilities = null;
-        if(dir == Elevator.Direction.UP) {
-            System.out.println("up");
+        if (dir == Elevator.Direction.UP) {
             possibilities = new Integer[Elevator.N_FLOORS - floor];
             for (int i = 0; i < possibilities.length; i++) {
                 possibilities[i] = floor + i;
             }
-        } else if(dir == Elevator.Direction.DOWN) {
-            System.out.println("down");
+        } else if (dir == Elevator.Direction.DOWN) {
             possibilities = new Integer[floor];
             for (int i = 0; i < possibilities.length; i++) {
                 possibilities[i] = i;
@@ -132,7 +131,7 @@ public class Frame extends JFrame {
                     null,
                     possibilities,
                     floor);
-            if(result != null && result instanceof Integer value){
+            if (result != null && result instanceof Integer value) {
                 floors[i] = value;
             }
         }
@@ -184,10 +183,10 @@ public class Frame extends JFrame {
                 int down = personCount[i][0];
                 int up = personCount[i][1];
                 for (int j = 0; j < down; j++) {
-                    g.drawImage(redPerson, PANEL_WIDTH / 2 - 3 * ELEVATOR_WIDTH / 2 - (ELEVATOR_WIDTH  * (j + 1)/ 2 ), PANEL_HEIGHT - (ELEVATOR_HEIGHT * (i + 1)), ELEVATOR_HEIGHT/2, ELEVATOR_HEIGHT, null);
+                    g.drawImage(redPerson, PANEL_WIDTH / 2 - 3 * ELEVATOR_WIDTH / 2 - (ELEVATOR_WIDTH * (j + 1) / 2), PANEL_HEIGHT - (ELEVATOR_HEIGHT * (i + 1)), ELEVATOR_HEIGHT / 2, ELEVATOR_HEIGHT, null);
                 }
                 for (int j = 0; j < up; j++) {
-                    g.drawImage(bluePerson, PANEL_WIDTH / 2 + ELEVATOR_WIDTH + (ELEVATOR_WIDTH  * (j + 1)/ 2 ), PANEL_HEIGHT - (ELEVATOR_HEIGHT * (i + 1)), ELEVATOR_HEIGHT/2, ELEVATOR_HEIGHT, null);
+                    g.drawImage(bluePerson, PANEL_WIDTH / 2 + ELEVATOR_WIDTH + (ELEVATOR_WIDTH * (j + 1) / 2), PANEL_HEIGHT - (ELEVATOR_HEIGHT * (i + 1)), ELEVATOR_HEIGHT / 2, ELEVATOR_HEIGHT, null);
                 }
             }
         }
@@ -198,24 +197,24 @@ public class Frame extends JFrame {
 
             public Animator(Elevator.Direction dir) {
                 this.dir = dir;
-                if(dir == Elevator.Direction.UP){
+                if (dir == Elevator.Direction.UP) {
                     panel.nextFloor = Math.min(Elevator.N_FLOORS, panel.nextFloor + 1);
-                } else if(dir == Elevator.Direction.DOWN) {
+                } else if (dir == Elevator.Direction.DOWN) {
                     panel.nextFloor = Math.max(0, panel.nextFloor - 1);
                 }
             }
 
             @Override
             public void run() {
-                if(dir == Elevator.Direction.UP && elevatorY/ELEVATOR_HEIGHT < nextFloor) {
-                    elevatorY += 1;
-                } else if(dir == Elevator.Direction.DOWN && elevatorY/ELEVATOR_HEIGHT >= nextFloor)
-                    elevatorY -= 1;
-                else {
-                    cancel();
+                if (dir == Elevator.Direction.UP && elevatorY / ELEVATOR_HEIGHT < nextFloor) {
+                    elevatorY += 2;
+                } else if(dir == Elevator.Direction.DOWN && elevatorY/ELEVATOR_HEIGHT >= nextFloor && elevatorY > 0) {
+                    elevatorY -= 2;
+                }else {
+                        cancel();
+                    }
+                    repaint();
                 }
-                repaint();
             }
         }
     }
-}
