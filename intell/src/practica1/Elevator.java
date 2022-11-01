@@ -44,7 +44,6 @@ public class Elevator extends AbstractModel implements Runnable {
             if (direction == Direction.UP
                     && (requests.directions[currentFloor] == Direction.UP || requests.out[currentFloor]
                     || (requests.directions[currentFloor] == Direction.DOWN && !nextAbove(OUT)))) {
-                System.out.println("IM TRYING TO OPEN THE DOORS");
                 // Open and close doors
                 // Everyone got out, we don't have anymore out requests for this floor
                 requests.out[currentFloor] = false;

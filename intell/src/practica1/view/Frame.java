@@ -1,11 +1,6 @@
 package practica1.view;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -30,20 +25,25 @@ public class Frame extends JFrame {
 
     private Panel panel;
     private Image openImage, closedImage;
-    private Image bluePerson, redPerson;
+    private Image bluePerson, redPerson, blueArrow, redArrow;
     private JButton[] downButtons, upButtons;
 
     public Frame() {
         try {
-            openImage = ImageIO.read(new File("assets/images/open.png"));
+            openImage = ImageIO.read(new File("assets/images/open_elevator.png"));
             openImage = openImage.getScaledInstance(ELEVATOR_WIDTH, ELEVATOR_HEIGHT, Image.SCALE_SMOOTH);
-            closedImage = ImageIO.read(new File("assets/images/close.png"));
+            closedImage = ImageIO.read(new File("assets/images/closed_elevator.png"));
             closedImage = closedImage.getScaledInstance(ELEVATOR_WIDTH, ELEVATOR_HEIGHT, Image.SCALE_SMOOTH);
 
             redPerson = ImageIO.read(new File("assets/images/red.png"));
             redPerson = redPerson.getScaledInstance(ELEVATOR_WIDTH / 2, ELEVATOR_HEIGHT, Image.SCALE_SMOOTH);
             bluePerson = ImageIO.read(new File("assets/images/blue.png"));
             bluePerson = bluePerson.getScaledInstance(ELEVATOR_WIDTH / 2, ELEVATOR_HEIGHT, Image.SCALE_SMOOTH);
+
+            blueArrow = ImageIO.read(new File("assets/images/subir2.png"));
+            blueArrow = blueArrow.getScaledInstance(ELEVATOR_WIDTH / 2, ELEVATOR_HEIGHT, Image.SCALE_SMOOTH);
+            redArrow = ImageIO.read(new File("assets/images/bajar2.png"));
+            redArrow = redArrow.getScaledInstance(ELEVATOR_WIDTH / 2, ELEVATOR_HEIGHT, Image.SCALE_SMOOTH);
         } catch (IOException ex) {
             Logger.getLogger(Frame.class.getName()).log(Level.SEVERE, null, ex);
             return;
@@ -153,7 +153,7 @@ public class Frame extends JFrame {
             super.paintComponent(g);
             Graphics2D graphics = (Graphics2D) g;
             drawBackgrounds(graphics);
-            drawFloors(graphics);
+            drawFloors(graphics, redArrow, blueArrow);
             drawElevator(graphics, opened ? openImage : closedImage);
             drawPersons(graphics);
         }
@@ -165,12 +165,17 @@ public class Frame extends JFrame {
             g.fillRect(PANEL_WIDTH / 2 - ELEVATOR_WIDTH / 2, 0, ELEVATOR_WIDTH + 1, PANEL_HEIGHT);
         }
 
-        private void drawFloors(Graphics2D g) {
+        private void drawFloors(Graphics2D g, Image redArrow, Image blueArrow) {
             g.setColor(Color.black);
+            g.setFont(new Font("TimesRoman", Font.BOLD, 15));
+
             for (int i = 0; i < Elevator.N_FLOORS; i++) {
                 g.drawLine(0, i * ELEVATOR_HEIGHT, PANEL_WIDTH, i * ELEVATOR_HEIGHT);
                 g.drawRect(PANEL_WIDTH / 2 - 3 * ELEVATOR_HEIGHT / 2, (i) * ELEVATOR_HEIGHT + ELEVATOR_HEIGHT / 4, ELEVATOR_HEIGHT / 2, ELEVATOR_HEIGHT / 2);
                 g.drawRect(PANEL_WIDTH / 2 + ELEVATOR_HEIGHT, (i) * ELEVATOR_HEIGHT + ELEVATOR_HEIGHT / 4, ELEVATOR_HEIGHT / 2, ELEVATOR_HEIGHT / 2);
+                g.drawImage(redArrow,PANEL_WIDTH / 2 - 3 * ELEVATOR_HEIGHT / 2, (i) * ELEVATOR_HEIGHT + ELEVATOR_HEIGHT / 4, ELEVATOR_HEIGHT / 2, ELEVATOR_HEIGHT / 2, null);
+                g.drawImage(blueArrow,PANEL_WIDTH / 2 + ELEVATOR_HEIGHT, (i) * ELEVATOR_HEIGHT + ELEVATOR_HEIGHT / 4, ELEVATOR_HEIGHT / 2, ELEVATOR_HEIGHT / 2, null);
+                g.drawString(String.valueOf(Elevator.N_FLOORS - i - 1), 10, (i) * ELEVATOR_HEIGHT + ELEVATOR_HEIGHT / 2 + ELEVATOR_HEIGHT / 8);
             }
         }
 
