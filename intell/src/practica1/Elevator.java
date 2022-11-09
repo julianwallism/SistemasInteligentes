@@ -8,7 +8,7 @@ import java.util.Objects;
 public class Elevator extends AbstractModel implements Runnable {
 
     /* Constats */
-    public static final int N_FLOORS = 11;
+    public static final int N_FLOORS = 10;
     private static final float DELTA = 1; // in seconds
     private static final Boolean IN = true;
 
@@ -169,7 +169,7 @@ public class Elevator extends AbstractModel implements Runnable {
      * to enter/exit the elevator
      */
     private void waitDelta(Boolean opening) {
-        int num = opening ? 1000 : 250;
+        int num = opening ? 1500 : 1000;
         try {
             Thread.sleep((long) (DELTA * num));
         } catch (InterruptedException ex) {

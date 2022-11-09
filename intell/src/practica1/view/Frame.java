@@ -95,7 +95,7 @@ public class Frame extends JFrame {
 
     public void moveElevator(Elevator.Direction dir) {
         Timer timer = new Timer();
-        timer.scheduleAtFixedRate(panel.new Animator(dir), 0, 25);
+        timer.scheduleAtFixedRate(panel.new Animator(dir), 0, 16);
     }
 
     public void openDoor(boolean open) {
@@ -131,7 +131,9 @@ public class Frame extends JFrame {
                     null,
                     possibilities,
                     floor);
-            if (result != null && result instanceof Integer value) {
+            if(result == null) {
+                floors[i] = floor;
+            }else if (result instanceof Integer value) {
                 floors[i] = value;
             }
         }
@@ -171,10 +173,15 @@ public class Frame extends JFrame {
 
             for (int i = 0; i < Elevator.N_FLOORS; i++) {
                 g.drawLine(0, i * ELEVATOR_HEIGHT, PANEL_WIDTH, i * ELEVATOR_HEIGHT);
-                g.drawRect(PANEL_WIDTH / 2 - 3 * ELEVATOR_HEIGHT / 2, (i) * ELEVATOR_HEIGHT + ELEVATOR_HEIGHT / 4, ELEVATOR_HEIGHT / 2, ELEVATOR_HEIGHT / 2);
-                g.drawRect(PANEL_WIDTH / 2 + ELEVATOR_HEIGHT, (i) * ELEVATOR_HEIGHT + ELEVATOR_HEIGHT / 4, ELEVATOR_HEIGHT / 2, ELEVATOR_HEIGHT / 2);
-                g.drawImage(redArrow,PANEL_WIDTH / 2 - 3 * ELEVATOR_HEIGHT / 2, (i) * ELEVATOR_HEIGHT + ELEVATOR_HEIGHT / 4, ELEVATOR_HEIGHT / 2, ELEVATOR_HEIGHT / 2, null);
-                g.drawImage(blueArrow,PANEL_WIDTH / 2 + ELEVATOR_HEIGHT, (i) * ELEVATOR_HEIGHT + ELEVATOR_HEIGHT / 4, ELEVATOR_HEIGHT / 2, ELEVATOR_HEIGHT / 2, null);
+
+                if(i != Elevator.N_FLOORS - 1) {
+                    g.drawRect(PANEL_WIDTH / 2 - 3 * ELEVATOR_HEIGHT / 2, (i) * ELEVATOR_HEIGHT + ELEVATOR_HEIGHT / 4, ELEVATOR_HEIGHT / 2, ELEVATOR_HEIGHT / 2);
+                    g.drawImage(redArrow, PANEL_WIDTH / 2 - 3 * ELEVATOR_HEIGHT / 2, (i) * ELEVATOR_HEIGHT + ELEVATOR_HEIGHT / 4, ELEVATOR_HEIGHT / 2, ELEVATOR_HEIGHT / 2, null);
+                }
+                if(i != 0) {
+                    g.drawRect(PANEL_WIDTH / 2 + ELEVATOR_HEIGHT, (i) * ELEVATOR_HEIGHT + ELEVATOR_HEIGHT / 4, ELEVATOR_HEIGHT / 2, ELEVATOR_HEIGHT / 2);
+                    g.drawImage(blueArrow, PANEL_WIDTH / 2 + ELEVATOR_HEIGHT, (i) * ELEVATOR_HEIGHT + ELEVATOR_HEIGHT / 4, ELEVATOR_HEIGHT / 2, ELEVATOR_HEIGHT / 2, null);
+                }
                 g.drawString(String.valueOf(Elevator.N_FLOORS - i - 1), 10, (i) * ELEVATOR_HEIGHT + ELEVATOR_HEIGHT / 2 + ELEVATOR_HEIGHT / 8);
             }
         }
@@ -212,9 +219,9 @@ public class Frame extends JFrame {
             @Override
             public void run() {
                 if (dir == Elevator.Direction.UP && elevatorY / ELEVATOR_HEIGHT < nextFloor) {
-                    elevatorY += 2;
+                    elevatorY += 1;
                 } else if(dir == Elevator.Direction.DOWN && elevatorY/ELEVATOR_HEIGHT >= nextFloor && elevatorY > 0) {
-                    elevatorY -= 2;
+                    elevatorY -= 1;
                 }else {
                         cancel();
                     }

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="e7b954ae-7a0c-4b7b-be70-6e64c43f750d" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/intell/practica1/Controller$FrameClicked.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/intell/practica1/Controller$FrameClicked.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/intell/practica1/Controller.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/intell/practica1/Controller.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/intell/practica1/Elevator$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/intell/practica1/Elevator$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/intell/practica1/Elevator$Direction.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/intell/practica1/Elevator$Direction.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/intell/practica1/Elevator$Request.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/intell/practica1/Elevator$Request.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/intell/practica1/Elevator$Requests.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/intell/practica1/Elevator$Requests.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/intell/practica1/Elevator.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/intell/practica1/Elevator.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/intell/practica1/view/Frame$Panel$Animator.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/intell/practica1/view/Frame$Panel$Animator.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/intell/practica1/view/Frame$Panel.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/intell/practica1/view/Frame$Panel.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/intell/practica1/view/Frame.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/intell/practica1/view/Frame.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/practica1/Elevator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/practica1/Elevator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/practica1/view/Frame.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/practica1/view/Frame.java" afterDir="false" />
+    </list>
+    <list id="ea4f4c06-f822-44bb-ae63-30280b416749" name="Changes by walli" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2GS10QGWkAHGDhJCenLXU1wHPFa" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/Jonathan/OneDrive - Universitat de les Illes Balears/grado/4t/1rq/si/practica/intell&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;project.propCompiler&quot;
+  }
+}</component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="e7b954ae-7a0c-4b7b-be70-6e64c43f750d" name="Changes" comment="" />
+      <created>1666366947255</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1666366947255</updated>
+      <workItem from="1666366948363" duration="5091000" />
+      <workItem from="1666392191634" duration="3410000" />
+      <workItem from="1666468550649" duration="3185000" />
+      <workItem from="1666516389506" duration="2003000" />
+      <workItem from="1666523961677" duration="964000" />
+      <workItem from="1666628681304" duration="3634000" />
+      <workItem from="1666787891873" duration="3227000" />
+      <workItem from="1666958140962" duration="1218000" />
+      <workItem from="1667146702283" duration="2342000" />
+      <workItem from="1667211456803" duration="2707000" />
+      <workItem from="1667230058309" duration="597000" />
+      <workItem from="1667238227517" duration="4836000" />
+      <workItem from="1667482849087" duration="1225000" />
+      <workItem from="1667925028418" duration="2743000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
