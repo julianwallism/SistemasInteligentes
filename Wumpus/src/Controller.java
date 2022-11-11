@@ -1,3 +1,5 @@
+import model.Model;
+
 import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -14,8 +16,6 @@ public class Controller {
 
     public void start() {
         //model.addPropertyChangeListener(this::modelListener);
-        Model.SIZE = view.getBoardSize();
-
         view.addListener(new FrameClicked());
         view.setVisible(true);
     }
@@ -30,6 +30,7 @@ public class Controller {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
+            Model.SIZE = View.getBoardSize();
             Controller controller = new Controller(new Model(), new View());
             controller.start();
         });
