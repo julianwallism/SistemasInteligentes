@@ -17,7 +17,7 @@ public class Tile {
     }
 
     public void visit(){
-        this.type |= Type.AGENT.bit; // Cambiar imagen
+        addType(Type.AGENT);
         this.isOccupied = true;
         this.visited = true;
         this.times++;
@@ -31,6 +31,11 @@ public class Tile {
     public void addType(Type type) {
         this.type &= ~Type.EMPTY.bit;
         this.type |= type.bit;
+    }
+
+    // Remove a type from the tile
+    public void removeType(Type type) {
+        this.type &= ~type.bit;
     }
 
     /*
@@ -97,6 +102,20 @@ public class Tile {
         public static boolean isType(int tile, Type type) {
             return (tile & type.bit) != 0;
         }
+
+        //Returns true if the tyle is only that type
+        public static boolean isOnlyType(int tile, Type type) {
+            return (tile & ~type.bit) == 0;
+        }
+
+        // Returns true if the tile has only the types given
+         public static boolean isOnlyTypes(int tile, Type... types) {
+             int sum = 0;
+             for (Type type : types) {
+                 sum |= type.bit;
+             }
+             return (tile & ~sum) == 0;
+         }
 
         public static ArrayList<Type> getTypes(int type) {
             ArrayList<Type> types = new ArrayList<>();

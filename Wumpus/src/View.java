@@ -13,20 +13,20 @@ import java.util.HashMap;
 public class View extends JFrame {
 
     /* Constants */
-    private static final int PANEL_SIZE = 600;
+    public static final int PANEL_SIZE = 600;
     private static final int MIN = 4, MAX = 10;
 
     /* Images */
     private final static String IMAGES_PATH = "assets/images";
     private static int TILE_SIZE;
-    private static HashMap<String, Image> image;
+    private static HashMap<String, ImageIcon> image;
 
     /* Variables */
     private JPanel panel;
-    private JLabel[][] tile;
+    private static JLabel[][] tile;
 
     private JButton startBtn, nextBtn;
-    private JComboBox tileChooser;
+    public static JComboBox tileChooser;
     private JLabel tileLbl, speedLbl, textArea;
     private JSlider speedSlider;
 
@@ -49,14 +49,15 @@ public class View extends JFrame {
         for (int i = 0; i < tile.length; i++) {
             for (int j = 0; j < tile[0].length; j++) {
                 tile[i][j] = new JLabel();
+                tile[i][j].setBorder(BorderFactory.createLineBorder(Color.black));
                 tile[i][j].setOpaque(true);
                 tile[i][j].setSize(TILE_SIZE, TILE_SIZE);
-                tile[i][j].setIcon(new ImageIcon(image.get("agent_stench_wind_gold")));
+                tile[i][j].setIcon(image.get("empty"));
                 panel.add(tile[i][j]);
             }
         }
 
-        textArea = new JLabel("Selecione una casilla y haga click para colocarla.\nUna vez completado el tablero haga click en comenzar.");
+        textArea = new JLabel("<html>Selecione una casilla y haga click para colocarla.\nUna vez completado el tablero haga click en comenzar.</html>");
 
         tileLbl = new JLabel("Seleccione Casilla:");
         tileChooser = new JComboBox<>(Tile.Type.getPlacebleTypes());
@@ -151,10 +152,63 @@ public class View extends JFrame {
             for(File imageFile: new File(IMAGES_PATH).listFiles()) {
                 String name = imageFile.getName().replace(".png", "").toLowerCase();
                 Image img = ImageIO.read(imageFile).getScaledInstance(TILE_SIZE, TILE_SIZE, Image.SCALE_SMOOTH);
-                image.put(name, img);
+                ImageIcon icon = new ImageIcon(img);
+                image.put(name, icon);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    // Updates the view based on the model
+    public static void updateImages(Tile[][] board){
+        for(int i = 0; i < Model.SIZE; i++){
+            for(int j = 0; j < Model.SIZE; j++){
+                int type = board[i][j].getType();
+                ImageIcon currentIcon = (ImageIcon) tile[i][j].getIcon();
+                ImageIcon newIcon;
+                if(Tile.Type.isOnlyType(type, Tile.Type.EMPTY)){
+                    newIcon = image.get("empty");
+                } else if(Tile.Type.isOnlyType(type, Tile.Type.BREEZE)){
+                    newIcon = image.get("wind");
+                } else if(Tile.Type.isOnlyType(type, Tile.Type.STENCH)){
+                    newIcon = image.get("stench");
+                } else if(Tile.Type.isOnlyType(type, Tile.Type.GOLD)){
+                    newIcon = image.get("gold");
+                } else if(Tile.Type.isOnlyType(type, Tile.Type.AGENT)){
+                    newIcon = image.get("agent");
+                } else if(Tile.Type.isType(type, Tile.Type.WUMPUS)){
+                    newIcon = image.get("wumpus");
+                } else if(Tile.Type.isType(type, Tile.Type.HOLE)){
+                    newIcon = image.get("hole");
+                } else if(Tile.Type.isOnlyTypes(type, Tile.Type.BREEZE, Tile.Type.STENCH)){
+                    newIcon = image.get("wind_stench");
+                } else if(Tile.Type.isOnlyTypes(type, Tile.Type.BREEZE, Tile.Type.GOLD)){
+                    newIcon = image.get("gold_wind");
+                } else if(Tile.Type.isOnlyTypes(type, Tile.Type.GOLD, Tile.Type.STENCH)){
+                    newIcon = image.get("gold_stench");
+                } else if(Tile.Type.isOnlyTypes(type, Tile.Type.BREEZE, Tile.Type.STENCH, Tile.Type.GOLD)){
+                    newIcon = image.get("gold_stench_wind");
+                } else if(Tile.Type.isOnlyTypes(type, Tile.Type.AGENT, Tile.Type.STENCH)){
+                    newIcon = image.get("agent_stench");
+                } else if(Tile.Type.isOnlyTypes(type, Tile.Type.AGENT, Tile.Type.GOLD)){
+                    newIcon = image.get("agent_gold");
+                } else if(Tile.Type.isOnlyTypes(type, Tile.Type.AGENT, Tile.Type.BREEZE)){
+                    newIcon = image.get("agent_wind");
+                } else if(Tile.Type.isOnlyTypes(type, Tile.Type.AGENT, Tile.Type.STENCH, Tile.Type.GOLD)){
+                    newIcon = image.get("agent_stench_gold");
+                }else if(Tile.Type.isOnlyTypes(type, Tile.Type.AGENT, Tile.Type.BREEZE, Tile.Type.GOLD)){
+                    newIcon = image.get("agent_wind_gold");
+                }else if(Tile.Type.isOnlyTypes(type, Tile.Type.AGENT, Tile.Type.BREEZE, Tile.Type.STENCH)){
+                    newIcon = image.get("agent_wind_stench");
+                }else if(Tile.Type.isOnlyTypes(type, Tile.Type.AGENT, Tile.Type.BREEZE, Tile.Type.STENCH, Tile.Type.GOLD)){
+                    newIcon = image.get("agent_stench_wind_gold");
+                } else {
+                    newIcon = image.get("error");
+                }
+                if(currentIcon.equals(newIcon)) continue;
+                tile[i][j].setIcon(newIcon);
+            }
         }
     }
 
