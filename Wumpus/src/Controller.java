@@ -6,7 +6,7 @@ import java.awt.event.MouseEvent;
 
 public class Controller {
 
-    private static Model model;
+    private Model model;
     private View view;
 
     public Controller(Model model, View view) {
@@ -17,10 +17,11 @@ public class Controller {
     public void start() {
         //model.addPropertyChangeListener(this::modelListener);
         view.addListener(new FrameClicked());
+        View.updateImages(model.getBoard());
         view.setVisible(true);
     }
 
-    private static class FrameClicked extends MouseAdapter {
+    private class FrameClicked extends MouseAdapter {
 
         @Override
         public void mousePressed(MouseEvent evt) {
@@ -30,8 +31,7 @@ public class Controller {
             if(i==0 && j==0){
                 return;
             }
-            String name = View.tileChooser.getSelectedItem().toString().toUpperCase();
-            model.changeTile(i, j, name);
+            model.changeTile(i, j, view.getSelectedType());
             View.updateImages(model.getBoard());
         }
     }
@@ -41,7 +41,6 @@ public class Controller {
             Model.SIZE = View.getBoardSize();
             Controller controller = new Controller(new Model(), new View());
             controller.start();
-            View.updateImages(model.getBoard());
         });
     }
 }

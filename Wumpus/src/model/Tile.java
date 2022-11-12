@@ -73,13 +73,13 @@ public class Tile {
 
     private void calculateKnowledge() {
         this.knowledge = 0;
-        ArrayList<Type> types = Type.getTypes(this.type);
+        ArrayList<Type> types = Type.asList(this.type);
         for(Type type: types) {
             switch(type) {
                 case BREEZE, STENCH -> this.knowledge |= type.bit;
             }
         }
-        Type.getTypes(this.knowledge);
+        Type.asList(this.knowledge);
     }
 
     public enum Type {
@@ -117,12 +117,11 @@ public class Tile {
              return (tile & ~sum) == 0;
          }
 
-        public static ArrayList<Type> getTypes(int type) {
+        public static ArrayList<Type> asList(int type) {
             ArrayList<Type> types = new ArrayList<>();
             for(Type val: Type.values()){
                 if(isType(type, val)) types.add(val);
             }
-            System.out.println(types);
             return types;
         }
 

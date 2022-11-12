@@ -7,6 +7,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -26,7 +27,7 @@ public class View extends JFrame {
     private static JLabel[][] tile;
 
     private JButton startBtn, nextBtn;
-    public static JComboBox tileChooser;
+    private JComboBox tileChooser;
     private JLabel tileLbl, speedLbl, textArea;
     private JSlider speedSlider;
 
@@ -164,6 +165,16 @@ public class View extends JFrame {
     public static void updateImages(Tile[][] board){
         for(int i = 0; i < Model.SIZE; i++){
             for(int j = 0; j < Model.SIZE; j++){
+                ImageIcon currentIcon = (ImageIcon) tile[i][j].getIcon(), newIcon;
+                String imgName = "";
+                ArrayList<Tile.Type> types = Tile.Type.asList(board[i][j].getType());
+                for(Tile.Type type: types) {
+                    imgName += type.toString().toLowerCase() + "_";
+                }
+                imgName = imgName.length() == 0 ? "empty" : (imgName.substring(0, imgName.length() - 1));
+                newIcon = image.get(image.containsKey(imgName) ? imgName : "error");
+
+                /*
                 int type = board[i][j].getType();
                 ImageIcon currentIcon = (ImageIcon) tile[i][j].getIcon();
                 ImageIcon newIcon;
@@ -205,11 +216,15 @@ public class View extends JFrame {
                     newIcon = image.get("agent_stench_wind_gold");
                 } else {
                     newIcon = image.get("error");
-                }
+                } */
                 if(currentIcon.equals(newIcon)) continue;
                 tile[i][j].setIcon(newIcon);
             }
         }
+    }
+
+    public String getSelectedType(){
+        return tileChooser.getSelectedItem().toString().toUpperCase();
     }
 
     public void addListener(MouseAdapter adapter) {
