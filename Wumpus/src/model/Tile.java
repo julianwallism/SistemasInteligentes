@@ -38,14 +38,14 @@ public class Tile {
         this.type &= ~type.bit;
     }
 
-    /*
-    public Knowledge getKnowledge() {
+    public int getKnowledge() {
         return knowledge;
     }
 
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = knowledge;
-    } */
+    public void addKnowledge(Knowledge knowledge) {
+        this.knowledge &= ~Knowledge.EMPTY.bit;
+        this.knowledge |= knowledge.bit;
+    }
 
     public boolean isOccupied() {
         return isOccupied;
@@ -76,7 +76,9 @@ public class Tile {
         ArrayList<Type> types = Type.asList(this.type);
         for(Type type: types) {
             switch(type) {
-                case BREEZE, STENCH -> this.knowledge |= type.bit;
+                case EMPTY, HOLE, WUMPUS, GOLD, BREEZE, STENCH-> this.knowledge |= type.bit;
+                case AGENT, COVERED_HOLE, DEAD_WUMPUS-> {}
+
             }
         }
         Type.asList(this.knowledge);
@@ -141,5 +143,15 @@ public class Tile {
         POSSIBLE_HOLE,
         POSSIBLE_WUMPUS_AND_HOLE,
         UNKNOWN;
+        public int bit;
+
+        Knowledge() {
+            this.bit = (1 << ordinal());
+        }
+
+        public static boolean isType(int tile, Knowledge knowledge) {
+            return (tile & knowledge.bit) != 0;
+        }
+
     }
 }

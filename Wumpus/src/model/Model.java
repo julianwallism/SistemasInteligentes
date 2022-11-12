@@ -1,11 +1,13 @@
 package model;
 
 import model.Tile.Type;
+import model.Tile.Knowledge;
 
 public class Model {
     public static int SIZE;
     public Tile[][] board;
     public static final int[][] directions = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+    public static int[] currentPosition = new int[2];
 
     public Model() {
         board = new Tile[SIZE][SIZE];
@@ -14,10 +16,39 @@ public class Model {
                 board[i][j] = new Tile(Type.EMPTY);
             }
         }
-        board[0][0].visit();
+        currentPosition[0] = 0;
+        currentPosition[1] = 0;
+        board[currentPosition[0]][currentPosition[1]].visit();
     }
 
-    public Tile[][] getBoard() { return board; }
+    public void start(){
+        board[currentPosition[0]][currentPosition[1]].visit();
+        infer(currentPosition[0], currentPosition[1]);
+
+    }
+
+    private void infer(int i, int j) {
+        int type = board[i][j].getType();
+        for (int[] direction : directions) {
+            int x = i + direction[0];
+            int y = j + direction[1];
+            if (checkEdges(x, y)) {
+                System.out.println("x: " + x + " y: " + y);
+                int knowledge = board[x][y].getKnowledge();
+                if (Type.isType(type, Type.BREEZE) && Knowledge.isType(knowledge, Knowledge.UNKNOWN)) {
+                    System.out.println("BREEZE");
+                    board[x][y].addKnowledge(Knowledge.POSSIBLE_HOLE);
+                } else if (Type.isType(type, Type.STENCH) && Knowledge.isType(knowledge, Knowledge.UNKNOWN)) {
+                    System.out.println("STENCH");
+                    board[x][y].addKnowledge(Knowledge.POSSIBLE_WUMPUS);
+                }
+            }
+        }
+    }
+
+    public Tile[][] getBoard() {
+        return board;
+    }
 
     // Change the tile at the given coordinates
     // Assumptions: we can't have "wumpus", "hole" and "gold" on the same tile
@@ -31,6 +62,7 @@ public class Model {
             removeNeighbours(i, j, newType.bit);
             return;
         }
+
         if (Type.isType(oldType, Type.HOLE)) {
             board[i][j].removeType(Type.HOLE);
             removeNeighbours(i, j, oldType);
@@ -93,5 +125,7 @@ public class Model {
     }
 
     // Returns true if the given coordinates are inside the board
-    private static boolean checkEdges(int i, int j) { return i >= 0 && i < SIZE && j >= 0 && j < SIZE; }
+    private static boolean checkEdges(int i, int j) {
+        return i >= 0 && i < SIZE && j >= 0 && j < SIZE;
+    }
 }

@@ -19,6 +19,7 @@ public class Controller {
         view.addListener(new FrameClicked());
         View.updateImages(model.getBoard());
         view.setVisible(true);
+
     }
 
     private class FrameClicked extends MouseAdapter {

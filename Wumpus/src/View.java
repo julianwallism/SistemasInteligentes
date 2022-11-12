@@ -5,6 +5,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,6 +66,7 @@ public class View extends JFrame {
         //tileChooser.addActionListener((e) -> selectChesspiece());
 
         startBtn = new JButton("Comenzar");
+        startBtn.addActionListener((e) -> startBtnClicked());
 
         speedLbl = new JLabel("Velocidad");
         speedSlider = new JSlider(JSlider.HORIZONTAL, 0, 5, 0);
@@ -143,14 +145,15 @@ public class View extends JFrame {
                 null,
                 possibilities,
                 4);
-        if(result == null) System.exit(0);
+        if (result == null) System.exit(0);
         return (int) result;
     }
-    public static void loadImages(){
+
+    public static void loadImages() {
         TILE_SIZE = PANEL_SIZE / Model.SIZE;
         image = new HashMap<>();
         try {
-            for(File imageFile: new File(IMAGES_PATH).listFiles()) {
+            for (File imageFile : new File(IMAGES_PATH).listFiles()) {
                 String name = imageFile.getName().replace(".png", "").toLowerCase();
                 Image img = ImageIO.read(imageFile).getScaledInstance(TILE_SIZE, TILE_SIZE, Image.SCALE_SMOOTH);
                 ImageIcon icon = new ImageIcon(img);
@@ -162,70 +165,43 @@ public class View extends JFrame {
     }
 
     // Updates the view based on the model
-    public static void updateImages(Tile[][] board){
-        for(int i = 0; i < Model.SIZE; i++){
-            for(int j = 0; j < Model.SIZE; j++){
+    public static void updateImages(Tile[][] board) {
+        for (int i = 0; i < Model.SIZE; i++) {
+            for (int j = 0; j < Model.SIZE; j++) {
                 ImageIcon currentIcon = (ImageIcon) tile[i][j].getIcon(), newIcon;
                 String imgName = "";
                 ArrayList<Tile.Type> types = Tile.Type.asList(board[i][j].getType());
-                for(Tile.Type type: types) {
-                    imgName += type.toString().toLowerCase() + "_";
+                if (types.contains(Tile.Type.HOLE)) imgName = "hole_";
+                else if (types.contains(Tile.Type.WUMPUS)) imgName = "wumpus_";
+                else {
+                    for (Tile.Type type : types) {
+                        imgName += type.toString().toLowerCase() + "_";
+                    }
                 }
                 imgName = imgName.length() == 0 ? "empty" : (imgName.substring(0, imgName.length() - 1));
                 newIcon = image.get(image.containsKey(imgName) ? imgName : "error");
 
-                /*
-                int type = board[i][j].getType();
-                ImageIcon currentIcon = (ImageIcon) tile[i][j].getIcon();
-                ImageIcon newIcon;
-                if(Tile.Type.isOnlyType(type, Tile.Type.EMPTY)){
-                    newIcon = image.get("empty");
-                } else if(Tile.Type.isOnlyType(type, Tile.Type.BREEZE)){
-                    newIcon = image.get("wind");
-                } else if(Tile.Type.isOnlyType(type, Tile.Type.STENCH)){
-                    newIcon = image.get("stench");
-                } else if(Tile.Type.isOnlyType(type, Tile.Type.GOLD)){
-                    newIcon = image.get("gold");
-                } else if(Tile.Type.isOnlyType(type, Tile.Type.AGENT)){
-                    newIcon = image.get("agent");
-                } else if(Tile.Type.isType(type, Tile.Type.WUMPUS)){
-                    newIcon = image.get("wumpus");
-                } else if(Tile.Type.isType(type, Tile.Type.HOLE)){
-                    newIcon = image.get("hole");
-                } else if(Tile.Type.isOnlyTypes(type, Tile.Type.BREEZE, Tile.Type.STENCH)){
-                    newIcon = image.get("wind_stench");
-                } else if(Tile.Type.isOnlyTypes(type, Tile.Type.BREEZE, Tile.Type.GOLD)){
-                    newIcon = image.get("gold_wind");
-                } else if(Tile.Type.isOnlyTypes(type, Tile.Type.GOLD, Tile.Type.STENCH)){
-                    newIcon = image.get("gold_stench");
-                } else if(Tile.Type.isOnlyTypes(type, Tile.Type.BREEZE, Tile.Type.STENCH, Tile.Type.GOLD)){
-                    newIcon = image.get("gold_stench_wind");
-                } else if(Tile.Type.isOnlyTypes(type, Tile.Type.AGENT, Tile.Type.STENCH)){
-                    newIcon = image.get("agent_stench");
-                } else if(Tile.Type.isOnlyTypes(type, Tile.Type.AGENT, Tile.Type.GOLD)){
-                    newIcon = image.get("agent_gold");
-                } else if(Tile.Type.isOnlyTypes(type, Tile.Type.AGENT, Tile.Type.BREEZE)){
-                    newIcon = image.get("agent_wind");
-                } else if(Tile.Type.isOnlyTypes(type, Tile.Type.AGENT, Tile.Type.STENCH, Tile.Type.GOLD)){
-                    newIcon = image.get("agent_stench_gold");
-                }else if(Tile.Type.isOnlyTypes(type, Tile.Type.AGENT, Tile.Type.BREEZE, Tile.Type.GOLD)){
-                    newIcon = image.get("agent_wind_gold");
-                }else if(Tile.Type.isOnlyTypes(type, Tile.Type.AGENT, Tile.Type.BREEZE, Tile.Type.STENCH)){
-                    newIcon = image.get("agent_wind_stench");
-                }else if(Tile.Type.isOnlyTypes(type, Tile.Type.AGENT, Tile.Type.BREEZE, Tile.Type.STENCH, Tile.Type.GOLD)){
-                    newIcon = image.get("agent_stench_wind_gold");
-                } else {
-                    newIcon = image.get("error");
-                } */
-                if(currentIcon.equals(newIcon)) continue;
+                if (currentIcon.equals(newIcon)) continue;
                 tile[i][j].setIcon(newIcon);
             }
         }
     }
 
-    public String getSelectedType(){
+    public String getSelectedType() {
         return tileChooser.getSelectedItem().toString().toUpperCase();
     }
+
+    // When the startBtn gets clicked, block the tileChooser and the frame
+    public void startBtnClicked() {
+        tileChooser.setEnabled(false);
+        startBtn.setEnabled(false);
+        nextBtn.setEnabled(true);
+        speedSlider.setEnabled(true);
+
+        panel.removeMouseListener(panel.getMouseListeners()[0]);
+
+    }
+
 
     public void addListener(MouseAdapter adapter) {
         panel.addMouseListener(adapter);
