@@ -46,6 +46,10 @@ public class Tile {
         this.knowledge |= knowledge.bit;
     }
 
+    public void removeKnowledge(Knowledge knowledge) {
+        this.knowledge &= ~knowledge.bit;
+    }
+
     public boolean isOccupied() {
         return isOccupied;
     }
@@ -131,16 +135,14 @@ public class Tile {
     }
 
     public enum Knowledge {
+        UNKNOWN,
         EMPTY,
         WUMPUS,
         HOLE,
         BREEZE,
         STENCH,
-        BREEZE_AND_STENCH,
         POSSIBLE_WUMPUS,
-        POSSIBLE_HOLE,
-        POSSIBLE_WUMPUS_AND_HOLE,
-        UNKNOWN;
+        POSSIBLE_HOLE;
         public int bit;
 
         Knowledge() {
@@ -151,6 +153,14 @@ public class Tile {
             return (tile & knowledge.bit) != 0;
         }
 
+        public static boolean isOneOf(int tile, Knowledge... knowledges) {
+            for (Knowledge knowledge : knowledges) {
+                if(isType(tile, knowledge)) {
+                    return true;
+                }
+            }
+            return false;
+        }
         public static ArrayList<Knowledge> asList(int type) {
             ArrayList<Knowledge> knowledges = new ArrayList<>();
             for(Knowledge val: Knowledge.values()){
