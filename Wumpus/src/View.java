@@ -3,9 +3,10 @@ import model.Tile;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ public class View extends JFrame {
 
     private JButton startBtn, nextBtn;
     private JComboBox tileChooser;
-    private JLabel tileLbl, speedLbl, textArea;
+    private JLabel textArea, tileLbl, speedLbl, speedValLbl;
     private JSlider speedSlider;
 
     public View() {
@@ -63,14 +64,17 @@ public class View extends JFrame {
 
         tileLbl = new JLabel("Seleccione Casilla:");
         tileChooser = new JComboBox<>(Tile.Type.getPlacebleTypes());
-        //tileChooser.addActionListener((e) -> selectChesspiece());
 
         startBtn = new JButton("Comenzar");
-        startBtn.addActionListener((e) -> startBtnClicked());
 
         speedLbl = new JLabel("Velocidad");
         speedSlider = new JSlider(JSlider.HORIZONTAL, 0, 5, 0);
+        speedSlider.setMajorTickSpacing(1);
+        speedSlider.setPaintTicks(true);
+        speedValLbl = new JLabel("manual");
+        speedSlider.setEnabled(false);
         nextBtn = new JButton("->");
+        nextBtn.setEnabled(false);
     }
 
     private void addComponents() {
@@ -93,18 +97,18 @@ public class View extends JFrame {
                                                 .addComponent(startBtn)
                                                 .addGap(110, 110, 110))
                                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                                .addComponent(tileChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addGap(87, 87, 87))
-                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                                .addComponent(speedValLbl)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                        .addGroup(layout.createSequentialGroup()
-                                                                .addGap(58, 58, 58)
-                                                                .addComponent(speedLbl))
-                                                        .addComponent(speedSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                                .addGap(63, 63, 63))
+                                                        .addComponent(speedSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(tileChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                .addGap(54, 54, 54))
+                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                                .addComponent(speedLbl)
+                                                .addGap(125, 125, 125))
                                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                                 .addComponent(nextBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addGap(96, 96, 96))))
+                                                .addGap(97, 97, 97))))
         );
         layout.setVerticalGroup(
                 layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -124,7 +128,9 @@ public class View extends JFrame {
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addComponent(speedLbl)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                                .addComponent(speedSlider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                        .addComponent(speedSlider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(speedValLbl))
                                                 .addGap(18, 18, 18)
                                                 .addComponent(nextBtn)
                                                 .addGap(81, 81, 81))))
@@ -136,6 +142,7 @@ public class View extends JFrame {
     }
 
     public static int getBoardSize() {
+        /*
         Integer[] possibilities = new Integer[MAX - MIN + 1];
         Arrays.setAll(possibilities, i -> i + MIN);
         Object result = JOptionPane.showInputDialog(null,
@@ -146,7 +153,8 @@ public class View extends JFrame {
                 possibilities,
                 4);
         if (result == null) System.exit(0);
-        return (int) result;
+        return (int) result; */
+        return 5;
     }
 
     public static void loadImages() {
@@ -180,7 +188,6 @@ public class View extends JFrame {
                 }
                 imgName = imgName.length() == 0 ? "empty" : (imgName.substring(0, imgName.length() - 1));
                 newIcon = image.get(image.containsKey(imgName) ? imgName : "error");
-
                 if (currentIcon.equals(newIcon)) continue;
                 tile[i][j].setIcon(newIcon);
             }
@@ -191,19 +198,36 @@ public class View extends JFrame {
         return tileChooser.getSelectedItem().toString().toUpperCase();
     }
 
-    // When the startBtn gets clicked, block the tileChooser and the frame
-    public void startBtnClicked() {
-        tileChooser.setEnabled(false);
-        startBtn.setEnabled(false);
-        nextBtn.setEnabled(true);
-        speedSlider.setEnabled(true);
-
-        panel.removeMouseListener(panel.getMouseListeners()[0]);
-
+    public int getSpeed() {
+        int speed = speedSlider.getValue();
+        if(speed == 0) {
+            speedValLbl.setText("manual");
+            nextBtn.setEnabled(true);
+        } else {
+            speedValLbl.setText(speed + "x");
+            nextBtn.setEnabled(false);
+        }
+        return speed;
     }
 
+    // When the startBtn gets clicked, block the tileChooser and the frame
+    public void start() {
+        tileChooser.setEnabled(false);
+        startBtn.setEnabled(false);
+        speedSlider.setEnabled(true);
+        nextBtn.setEnabled(true);
+        panel.removeMouseListener(panel.getMouseListeners()[0]);
+    }
 
-    public void addListener(MouseAdapter adapter) {
+    public void addActionListener(ActionListener listener) {
+        startBtn.addActionListener(listener);
+        nextBtn.addActionListener(listener);
+    }
+
+    public void addSpeedListener(ChangeListener listener){
+        speedSlider.addChangeListener(listener);
+    }
+    public void addMouseListener(MouseAdapter adapter) {
         panel.addMouseListener(adapter);
     }
 }

@@ -1,6 +1,9 @@
 import model.Model;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -16,22 +19,38 @@ public class Controller {
 
     public void start() {
         //model.addPropertyChangeListener(this::modelListener);
-        view.addListener(new FrameClicked());
+        view.addMouseListener(new FrameClicked());
+        view.addActionListener(this::viewActionPerformed);
+        view.addSpeedListener(this::viewSpeedChanged);
         View.updateImages(model.getBoard());
         view.setVisible(true);
 
+    }
+
+    public void viewActionPerformed(ActionEvent evt) {
+        switch (evt.getActionCommand()) {
+            case "Comenzar" -> {
+                view.start();
+                model.start();
+            }
+            case "->" -> {
+                //
+            }
+        }
+    }
+
+    public void viewSpeedChanged(ChangeEvent evt) {
+        int speed = view.getSpeed();
+        // set speed in model
     }
 
     private class FrameClicked extends MouseAdapter {
 
         @Override
         public void mousePressed(MouseEvent evt) {
-            // Get the coordinates of the click and call the model to change the tile then update the view
             int i = evt.getY() / (View.PANEL_SIZE / Model.SIZE);
             int j = evt.getX() / (View.PANEL_SIZE / Model.SIZE);
-            if(i==0 && j==0){
-                return;
-            }
+            if(i==0 && j==0) return;
             model.changeTile(i, j, view.getSelectedType());
             View.updateImages(model.getBoard());
         }

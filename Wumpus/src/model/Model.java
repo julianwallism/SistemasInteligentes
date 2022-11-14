@@ -4,10 +4,13 @@ import model.Tile.Type;
 import model.Tile.Knowledge;
 
 public class Model {
+
+    public static final int[][] directions = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+    public static final int[][] diagonalDirections = {{-1, -1}, {-1, 1}, {1, 1}, {1, -1}};
+
     public static int SIZE;
     public Tile[][] board;
-    public static final int[][] directions = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
-    public static int[] currentPosition = new int[2];
+    private int xPos, yPos;
 
     public Model() {
         board = new Tile[SIZE][SIZE];
@@ -16,30 +19,43 @@ public class Model {
                 board[i][j] = new Tile(Type.EMPTY);
             }
         }
-        currentPosition[0] = 0;
-        currentPosition[1] = 0;
-        board[currentPosition[0]][currentPosition[1]].visit();
+        xPos = yPos = 0;
+        board[xPos][yPos].visit();
     }
 
     public void start(){
-        board[currentPosition[0]][currentPosition[1]].visit();
-        infer(currentPosition[0], currentPosition[1]);
+        board[xPos][yPos].visit();
+        infer(xPos, yPos);
+        think(xPos, yPos);
+
 
     }
 
+    public void think(int i, int j){
+        int knowledge = board[i][j].getKnowledge();
+        for(int[] direction: diagonalDirections){
+            int x = i + direction[0];
+            int y = j + direction[1];
+            if(checkEdges(x, y)){
+                int newKnowledge = board[x][y].getKnowledge();
+
+                // safe
+            }
+        }
+    }
+
+
     private void infer(int i, int j) {
         int type = board[i][j].getType();
+
         for (int[] direction : directions) {
             int x = i + direction[0];
             int y = j + direction[1];
             if (checkEdges(x, y)) {
-                System.out.println("x: " + x + " y: " + y);
                 int knowledge = board[x][y].getKnowledge();
-                if (Type.isType(type, Type.BREEZE) && Knowledge.isType(knowledge, Knowledge.UNKNOWN)) {
-                    System.out.println("BREEZE");
+                if (Type.isType(type, Type.BREEZE) && (Knowledge.isType(knowledge, Knowledge.UNKNOWN) || Knowledge.isType(knowledge, Knowledge.POSSIBLE_WUMPUS))) {
                     board[x][y].addKnowledge(Knowledge.POSSIBLE_HOLE);
-                } else if (Type.isType(type, Type.STENCH) && Knowledge.isType(knowledge, Knowledge.UNKNOWN)) {
-                    System.out.println("STENCH");
+                } else if (Type.isType(type, Type.STENCH) && (Knowledge.isType(knowledge, Knowledge.UNKNOWN) || Knowledge.isType(knowledge, Knowledge.POSSIBLE_WUMPUS))) {
                     board[x][y].addKnowledge(Knowledge.POSSIBLE_WUMPUS);
                 }
             }
@@ -78,8 +94,6 @@ public class Model {
     }
 
     // Given a tile, calculate the neighbours and add the "breeze" and "stench" types
-
-    // pasar type por parametro para hacer switch?, enlugar de addType, new asi no hay q quitar antes?
     private void calculateNeighbours(int i, int j) {
         int type = board[i][j].getType();
         for (int[] direction : directions) {

@@ -5,12 +5,11 @@ import java.util.ArrayList;
 public class Tile {
 
     private int type, knowledge, times;
-    //private Knowledge knowledge;
     private boolean isOccupied, visited;
 
     public Tile(Type type) {
         this.type = type.bit;
-        this.knowledge = 0;
+        this.knowledge = Knowledge.UNKNOWN.bit;
         this.isOccupied = false;
         this.visited = false;
         this.times = 0;
@@ -75,13 +74,12 @@ public class Tile {
         this.knowledge = 0;
         ArrayList<Type> types = Type.asList(this.type);
         for(Type type: types) {
+            Knowledge type_knowledge = Knowledge.fromType(type);
             switch(type) {
-                case EMPTY, HOLE, WUMPUS, GOLD, BREEZE, STENCH-> this.knowledge |= type.bit;
+                case EMPTY, HOLE, WUMPUS, GOLD, BREEZE, STENCH -> this.knowledge |= type_knowledge.bit;
                 case AGENT, COVERED_HOLE, DEAD_WUMPUS-> {}
-
             }
         }
-        Type.asList(this.knowledge);
     }
 
     public enum Type {
@@ -101,17 +99,17 @@ public class Tile {
             this.bit = (1 << ordinal());
         }
 
-        public static boolean isType(int tile, Type type) {
-            return (tile & type.bit) != 0;
+        public static boolean isType(int tile, Type... types) {
+            int sum = 0;
+            for (Type type: types){
+                sum |= type.bit;
+            }
+            return (tile & sum) != 0;
         }
 
-        //Returns true if the tyle is only that type
-        public static boolean isOnlyType(int tile, Type type) {
-            return (tile & ~type.bit) == 0;
-        }
 
         // Returns true if the tile has only the types given
-         public static boolean isOnlyTypes(int tile, Type... types) {
+        public static boolean isOnlyTypes(int tile, Type... types) {
              int sum = 0;
              for (Type type : types) {
                  sum |= type.bit;
@@ -153,5 +151,25 @@ public class Tile {
             return (tile & knowledge.bit) != 0;
         }
 
+        public static ArrayList<Knowledge> asList(int type) {
+            ArrayList<Knowledge> knowledges = new ArrayList<>();
+            for(Knowledge val: Knowledge.values()){
+                if(isType(type, val)) knowledges.add(val);
+            }
+            return knowledges;
+        }
+
+        public static Knowledge fromType(Type type) {
+            Knowledge knowledge = Knowledge.EMPTY;
+            switch(type) {
+                case EMPTY -> knowledge = Knowledge.EMPTY;
+                case HOLE -> knowledge = Knowledge.HOLE;
+                case WUMPUS -> knowledge = Knowledge.WUMPUS;
+                case BREEZE -> knowledge = Knowledge.BREEZE;
+                case STENCH -> knowledge = Knowledge.STENCH;
+                case AGENT, COVERED_HOLE, DEAD_WUMPUS, GOLD -> {}
+            }
+            return knowledge;
+        }
     }
 }
