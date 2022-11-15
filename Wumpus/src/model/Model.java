@@ -7,8 +7,8 @@ public class Model {
 
     public static final int[][] directions = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
     public static final int[][] diagonalDirections = {{-1, -1}, {-1, 1}, {1, 1}, {1, -1}};
-
     public static int SIZE;
+
     public Tile[][] board;
     private int xPos, yPos;
 
@@ -27,73 +27,69 @@ public class Model {
         for (int iter = 0; iter < 100; iter++) {
             board[xPos][yPos].visit();
             if (board[xPos][yPos].getTimes() == 1) {
-                infer(); // Infer from the current knowledge,
+                infer();
             }
-            think(); // Do we have more information?
-            holisticThink(); // Do we have more information?
+            think(); // Do we have more information (locally)?
+            holisticThink(); // Do we have more information (globally)?
             //   killOrCover();
             move();
         }
     }
 
-    private void move() {
-        int min = Integer.MAX_VALUE;
-        int minI = 0, minJ = 0;
+    private void infer() {
+        int type = board[xPos][yPos].getType();
         for (int[] direction : directions) {
             int x = xPos + direction[0];
             int y = yPos + direction[1];
             if (checkEdges(x, y)) {
-                int knowledge = board[x][y].getKnowledge();
-                if (Knowledge.isOneOf(knowledge, Knowledge.WUMPUS, Knowledge.HOLE, Knowledge.POSSIBLE_WUMPUS, Knowledge.POSSIBLE_HOLE)) {
-                    continue;
-                }
-                if (board[x][y].getTimes() < min) {
-                    min = board[x][y].getTimes();
-                    minI = x;
-                    minJ = y;
+                int kneighbourKnowledge = board[x][y].getKnowledge();
+                if (Type.isType(type, Type.BREEZE) && (Knowledge.isType(kneighbourKnowledge, Knowledge.UNKNOWN)
+                        || Knowledge.isType(kneighbourKnowledge, Knowledge.POSSIBLE_WUMPUS) || Knowledge.isType(kneighbourKnowledge, Knowledge.WUMPUS))) {
+                    board[x][y].addKnowledge(Knowledge.POSSIBLE_HOLE);
+                } else if (Type.isType(type, Type.STENCH) && (Knowledge.isType(kneighbourKnowledge, Knowledge.UNKNOWN)
+                        || Knowledge.isType(kneighbourKnowledge, Knowledge.POSSIBLE_HOLE) || Knowledge.isType(kneighbourKnowledge, Knowledge.HOLE))) {
+                    board[x][y].addKnowledge(Knowledge.POSSIBLE_WUMPUS);
                 }
             }
         }
-        xPos = minI;
-        yPos = minJ;
     }
 
-    private void killOrCover() {
-        // if there is a hole in an adjacent tile call cover
-        // if there is a wumpus in the same row or column call kill
-
-        // COVERING
-        for (int[] direction : directions) {
+    public void think() {
+        int knowledge = board[xPos][yPos].getKnowledge();
+        boolean posIsBreeze = Knowledge.isType(knowledge, Knowledge.BREEZE);
+        boolean posIsStench = Knowledge.isType(knowledge, Knowledge.STENCH);
+        for (int[] direction : diagonalDirections) {
             int x = xPos + direction[0];
             int y = yPos + direction[1];
             if (checkEdges(x, y)) {
-                int knowledge = board[x][y].getKnowledge();
-                if (Knowledge.isType(knowledge, Knowledge.HOLE)) {
-                    cover();
+                int diagKnowledge = board[x][y].getKnowledge();
+                boolean diagIsBreeze = Knowledge.isType(diagKnowledge, Knowledge.BREEZE);
+                boolean diagIsStench = Knowledge.isType(diagKnowledge, Knowledge.STENCH);
+
+                boolean verIsPossibleHole = Knowledge.isType(board[x][yPos].getKnowledge(), Knowledge.POSSIBLE_HOLE);
+                boolean horIsPossibleHole = Knowledge.isType(board[xPos][y].getKnowledge(), Knowledge.POSSIBLE_HOLE);
+
+                boolean verIsPossibleWumpus = Knowledge.isType(board[x][yPos].getKnowledge(), Knowledge.POSSIBLE_WUMPUS);
+                boolean horIsPossibleWumpus = Knowledge.isType(board[xPos][y].getKnowledge(), Knowledge.POSSIBLE_WUMPUS);
+
+                if (!(posIsBreeze && diagIsBreeze)) {
+                    if (verIsPossibleHole) {
+                        board[x][yPos].removeKnowledge(Knowledge.POSSIBLE_HOLE);
+                    }
+                    if (horIsPossibleHole) {
+                        board[xPos][y].removeKnowledge(Knowledge.POSSIBLE_HOLE);
+                    }
+                }
+                if (!(posIsStench && diagIsStench)) {
+                    if (verIsPossibleWumpus) {
+                        board[x][yPos].removeKnowledge(Knowledge.POSSIBLE_WUMPUS);
+                    }
+                    if (horIsPossibleWumpus) {
+                        board[xPos][y].removeKnowledge(Knowledge.POSSIBLE_WUMPUS);
+                    }
                 }
             }
         }
-
-        // KILLING
-        for (int i = 0; i < SIZE; i++) {
-
-            if (Knowledge.isType(board[i][yPos].getKnowledge(), Knowledge.WUMPUS)) {
-                kill();
-            }
-            if (Knowledge.isType(board[xPos][i].getKnowledge(), Knowledge.WUMPUS)) {
-                kill();
-            }
-        }
-
-
-    }
-
-    private void kill() {
-        // TODO
-    }
-
-    private void cover() {
-        // TODO
     }
 
     /**
@@ -116,6 +112,7 @@ public class Model {
                     int possible_wumpus = 0;
                     int breeze = 0;
                     int stench = 0;
+                    // TODO: REFACTOR THIS
                     for (int[] direction : directions) {
                         int x = i + direction[0];
                         int y = j + direction[1];
@@ -181,6 +178,66 @@ public class Model {
         }
     }
 
+    private void move() {
+        int min = Integer.MAX_VALUE;
+        int minI = 0, minJ = 0;
+        for (int[] direction : directions) {
+            int x = xPos + direction[0];
+            int y = yPos + direction[1];
+            if (checkEdges(x, y)) {
+                int knowledge = board[x][y].getKnowledge();
+                if (Knowledge.isOneOf(knowledge, Knowledge.WUMPUS, Knowledge.HOLE, Knowledge.POSSIBLE_WUMPUS, Knowledge.POSSIBLE_HOLE)) {
+                    continue;
+                }
+                if (board[x][y].getTimes() < min) {
+                    min = board[x][y].getTimes();
+                    minI = x;
+                    minJ = y;
+                }
+            }
+        }
+        xPos = minI;
+        yPos = minJ;
+    }
+
+    private void killOrCover() {
+        // if there is a hole in an adjacent tile call cover
+        // if there is a wumpus in the same row or column call kill
+
+        // COVERING
+        for (int[] direction : directions) {
+            int x = xPos + direction[0];
+            int y = yPos + direction[1];
+            if (checkEdges(x, y)) {
+                int knowledge = board[x][y].getKnowledge();
+                if (Knowledge.isType(knowledge, Knowledge.HOLE)) {
+                    cover();
+                }
+            }
+        }
+
+        // KILLING
+        for (int i = 0; i < SIZE; i++) {
+
+            if (Knowledge.isType(board[i][yPos].getKnowledge(), Knowledge.WUMPUS)) {
+                kill();
+            }
+            if (Knowledge.isType(board[xPos][i].getKnowledge(), Knowledge.WUMPUS)) {
+                kill();
+            }
+        }
+
+
+    }
+
+    private void kill() {
+        // TODO
+    }
+
+    private void cover() {
+        // TODO
+    }
+
     /*
     EMPTY,
     WUMPUS,
@@ -199,61 +256,7 @@ public class Model {
         BREEZE && STENCH and BREEZE && ~STENCH -> not(posible wumpus)
         BREEZE && STENCH and STENCH && ~BREEZE  -> not(posible hole)
      */
-    public void think() {
-        int knowledge = board[xPos][yPos].getKnowledge();
-        boolean b1 = Knowledge.isType(knowledge, Knowledge.BREEZE);
-        boolean s1 = Knowledge.isType(knowledge, Knowledge.STENCH);
-        for (int[] direction : diagonalDirections) {
-            int x = xPos + direction[0];
-            int y = yPos + direction[1];
-            if (checkEdges(x, y)) {
-                int newKnowledge = board[x][y].getKnowledge();
-                boolean b2 = Knowledge.isType(newKnowledge, Knowledge.BREEZE);
-                boolean s2 = Knowledge.isType(newKnowledge, Knowledge.STENCH);
 
-                boolean ph1 = Knowledge.isType(board[x][yPos].getKnowledge(), Knowledge.POSSIBLE_HOLE);
-                boolean ph2 = Knowledge.isType(board[xPos][y].getKnowledge(), Knowledge.POSSIBLE_HOLE);
-
-                boolean pw1 = Knowledge.isType(board[x][yPos].getKnowledge(), Knowledge.POSSIBLE_WUMPUS);
-                boolean pw2 = Knowledge.isType(board[xPos][y].getKnowledge(), Knowledge.POSSIBLE_WUMPUS);
-
-                if (!(b1 && b2)) {
-                    if (ph1) {
-                        board[x][yPos].removeKnowledge(Knowledge.POSSIBLE_HOLE);
-                    }
-                    if (ph2) {
-                        board[xPos][y].removeKnowledge(Knowledge.POSSIBLE_HOLE);
-                    }
-                }
-
-                if (!(s1 && s2)) {
-                    if (pw1) {
-                        board[x][yPos].removeKnowledge(Knowledge.POSSIBLE_WUMPUS);
-                    }
-                    if (pw2) {
-                        board[xPos][y].removeKnowledge(Knowledge.POSSIBLE_WUMPUS);
-                    }
-                }
-            }
-        }
-    }
-
-
-    private void infer() {
-        int type = board[xPos][yPos].getType();
-        for (int[] direction : directions) {
-            int x = xPos + direction[0];
-            int y = yPos + direction[1];
-            if (checkEdges(x, y)) {
-                int knowledge = board[x][y].getKnowledge();
-                if (Type.isType(type, Type.BREEZE) && (Knowledge.isType(knowledge, Knowledge.UNKNOWN) || Knowledge.isType(knowledge, Knowledge.POSSIBLE_WUMPUS))) {
-                    board[x][y].addKnowledge(Knowledge.POSSIBLE_HOLE);
-                } else if (Type.isType(type, Type.STENCH) && (Knowledge.isType(knowledge, Knowledge.UNKNOWN) || Knowledge.isType(knowledge, Knowledge.POSSIBLE_WUMPUS))) {
-                    board[x][y].addKnowledge(Knowledge.POSSIBLE_WUMPUS);
-                }
-            }
-        }
-    }
 
     public Tile[][] getBoard() {
         return board;
@@ -269,6 +272,10 @@ public class Model {
         if (Type.isType(oldType, newType)) {
             board[i][j].removeType(newType);
             removeNeighbours(i, j, newType.bit);
+            return;
+        }
+
+        if((Type.isType(oldType, Type.HOLE) || Type.isType(oldType, Type.WUMPUS)) && Type.isType(newType.bit, Type.GOLD)){
             return;
         }
 

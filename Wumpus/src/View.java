@@ -52,7 +52,8 @@ public class View extends JFrame {
         for (int i = 0; i < tile.length; i++) {
             for (int j = 0; j < tile[0].length; j++) {
                 tile[i][j] = new JLabel();
-                tile[i][j].setBorder(BorderFactory.createLineBorder(Color.black));
+                if(i == 0 && j == 0) tile[i][j].setBorder(BorderFactory.createLineBorder(Color.yellow,3));
+                else tile[i][j].setBorder(BorderFactory.createLineBorder(Color.black));
                 tile[i][j].setOpaque(true);
                 tile[i][j].setSize(TILE_SIZE, TILE_SIZE);
                 tile[i][j].setIcon(image.get("empty"));

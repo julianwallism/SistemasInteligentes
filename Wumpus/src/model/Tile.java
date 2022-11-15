@@ -170,16 +170,13 @@ public class Tile {
         }
 
         public static Knowledge fromType(Type type) {
-            Knowledge knowledge = Knowledge.EMPTY;
-            switch(type) {
-                case EMPTY -> knowledge = Knowledge.EMPTY;
-                case HOLE -> knowledge = Knowledge.HOLE;
-                case WUMPUS -> knowledge = Knowledge.WUMPUS;
-                case BREEZE -> knowledge = Knowledge.BREEZE;
-                case STENCH -> knowledge = Knowledge.STENCH;
-                case AGENT, COVERED_HOLE, DEAD_WUMPUS, GOLD -> {}
-            }
-            return knowledge;
+             return switch(type) {
+                case HOLE       -> Knowledge.HOLE;
+                case WUMPUS     -> Knowledge.WUMPUS;
+                case BREEZE     -> Knowledge.BREEZE;
+                case STENCH     -> Knowledge.STENCH;
+                default         -> Knowledge.EMPTY;
+            };
         }
     }
 }
