@@ -3,11 +3,12 @@ package model;
 import model.Tile.Type;
 import model.Tile.Knowledge;
 
-public class Model {
+public class Model extends AbstractModel {
 
     public static final int[][] directions = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
     public static final int[][] diagonalDirections = {{-1, -1}, {-1, 1}, {1, 1}, {1, -1}};
-    public static int SIZE;
+    public static int SIZE, NUM_HOLES, NUM_WUMPUS, NUM_GOLD;
+
 
     public Tile[][] board;
     private int xPos, yPos;
@@ -21,19 +22,39 @@ public class Model {
         }
         xPos = yPos = 0;
         board[xPos][yPos].visit();
+        board[xPos][yPos].setTimes(0); //Reset times
     }
 
     public void start() {
         for (int iter = 0; iter < 100; iter++) {
             board[xPos][yPos].visit();
+            firePropertyChange("movement", null, null);
             if (board[xPos][yPos].getTimes() == 1) {
                 infer();
             }
             think(); // Do we have more information (locally)?
             holisticThink(); // Do we have more information (globally)?
             //   killOrCover();
+            if (Type.isType(board[xPos][yPos].getType(), Type.GOLD)) {
+                board[xPos][yPos].removeType(Type.GOLD);
+                NUM_GOLD--;
+                if (NUM_GOLD == 0) {
+                    System.out.println("Ganaste");
+                    firePropertyChange("movement", null, null);
+                    printVisited();
+                    goBack();
+                    return;
+                }
+            } else if (Type.isType(board[xPos][yPos].getType(), Type.HOLE) || Type.isType(board[xPos][yPos].getType(), Type.WUMPUS)) {
+                System.out.println("Perdiste");
+                printVisited();
+                return;
+            }
+            board[xPos][yPos].removeType(Type.AGENT);
             move();
         }
+        System.out.println("Han pasado 100 iteraciones, hay un bucle?");
+        printVisited();
     }
 
     private void infer() {
@@ -63,8 +84,14 @@ public class Model {
             int y = yPos + direction[1];
             if (checkEdges(x, y)) {
                 int diagKnowledge = board[x][y].getKnowledge();
-                boolean diagIsBreeze = Knowledge.isType(diagKnowledge, Knowledge.BREEZE);
-                boolean diagIsStench = Knowledge.isType(diagKnowledge, Knowledge.STENCH);
+                boolean diagIsBreeze, diagIsStench;
+
+                if (Knowledge.isType(diagKnowledge, Knowledge.UNKNOWN)) {
+                    continue;
+                } else {
+                    diagIsBreeze = Knowledge.isType(diagKnowledge, Knowledge.BREEZE);
+                    diagIsStench = Knowledge.isType(diagKnowledge, Knowledge.STENCH);
+                }
 
                 boolean verIsPossibleHole = Knowledge.isType(board[x][yPos].getKnowledge(), Knowledge.POSSIBLE_HOLE);
                 boolean horIsPossibleHole = Knowledge.isType(board[xPos][y].getKnowledge(), Knowledge.POSSIBLE_HOLE);
@@ -200,6 +227,50 @@ public class Model {
         yPos = minJ;
     }
 
+    private void printVisited() {
+        //Print knowledge board
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                System.out.print(board[i][j].getTimes() + " ");
+            }
+            System.out.println();
+        }
+        // TODO: IMPLEMENT THIS
+    }
+
+    private void goBack() {
+        // Implement route to get back to 0,0, we can only use the tiles with visited > 0
+        // Manhatan distance heuristic
+        while (xPos != 0 || yPos != 0) {
+            board[xPos][yPos].removeType(Type.AGENT);
+            int min = Integer.MAX_VALUE;
+            int minI = 0, minJ = 0;
+            for (int[] direction : directions) {
+                int x1 = xPos + direction[0];
+                int y1 = yPos + direction[1];
+                if (checkEdges(x1, y1)) {
+                    if (board[x1][y1].getTimes() > 0) {
+                        int dist = manhattanDistance(x1, y1, 0, 0);
+                        if (dist < min) {
+                            min = dist;
+                            minI = x1;
+                            minJ = y1;
+                        }
+                    }
+                }
+            }
+            xPos = minI;
+            yPos = minJ;
+            board[xPos][yPos].addType(Type.AGENT);
+            firePropertyChange("movement", null, null);
+            System.out.println("Going back to " + xPos + " " + yPos);
+        }
+    }
+
+    public int manhattanDistance(int x1, int y1, int x2, int y2) {
+        return Math.abs(x1 - x2) + Math.abs(y1 - y2);
+    }
+
     private void killOrCover() {
         // if there is a hole in an adjacent tile call cover
         // if there is a wumpus in the same row or column call kill
@@ -238,26 +309,6 @@ public class Model {
         // TODO
     }
 
-    /*
-    EMPTY,
-    WUMPUS,
-    HOLE,
-    BREEZE,
-    STENCH,
-    POSSIBLE_WUMPUS,
-    POSSIBLE_HOLE,
-    UNKNOWN;
-
-    A safe pair is a pair of diagonally opposite tiles that allows us to infer that the tiles in between are safe.
-    P.ex Empty and breeze, it let us know that the tiles in between are safe.
-    The safe pairs are:
-        BREEZE && ~STENCH and ~BREEZE -> not(possible_hole/possible_wumpus)
-        STENCH && ~BREEZE and ~STENCH -> not(possible_hole/possible_wumpus)
-        BREEZE && STENCH and BREEZE && ~STENCH -> not(posible wumpus)
-        BREEZE && STENCH and STENCH && ~BREEZE  -> not(posible hole)
-     */
-
-
     public Tile[][] getBoard() {
         return board;
     }
@@ -268,26 +319,40 @@ public class Model {
         int oldType = board[i][j].getType();
         Type newType = Type.valueOf(name);
 
-        /* If oldType has newType, we remove it and its neighbours and return.  */
+        // "doubleclick" on the tile results on elimination of the type
         if (Type.isType(oldType, newType)) {
+
+            if (Type.isType(oldType, Type.WUMPUS)) NUM_WUMPUS--;
+            if (Type.isType(oldType, Type.HOLE)) NUM_HOLES--;
+            if (Type.isType(oldType, Type.GOLD)) NUM_GOLD--;
+
             board[i][j].removeType(newType);
             removeNeighbours(i, j, newType.bit);
             return;
         }
 
-        if((Type.isType(oldType, Type.HOLE) || Type.isType(oldType, Type.WUMPUS)) && Type.isType(newType.bit, Type.GOLD)){
+        // Can't add gold on top of a wumpus or a hole
+        if ((Type.isType(oldType, Type.HOLE) || Type.isType(oldType, Type.WUMPUS)) && Type.isType(newType.bit, Type.GOLD)) {
             return;
         }
 
+        // Adding wumpus or hole on top of another type removes the underlying type
         if (Type.isType(oldType, Type.HOLE)) {
+            NUM_HOLES--;
             board[i][j].removeType(Type.HOLE);
             removeNeighbours(i, j, oldType);
         } else if (Type.isType(oldType, Type.WUMPUS)) {
+            NUM_WUMPUS--;
             board[i][j].removeType(Type.WUMPUS);
             removeNeighbours(i, j, oldType);
         } else if (Type.isType(oldType, Type.GOLD)) {
+            NUM_GOLD--;
             board[i][j].removeType(Type.GOLD);
         }
+
+        if (Type.isType(newType.bit, Type.WUMPUS)) NUM_WUMPUS++;
+        if (Type.isType(newType.bit, Type.HOLE)) NUM_HOLES++;
+        if (Type.isType(newType.bit, Type.GOLD)) NUM_GOLD++;
         /* We add the new type and calculate its neighbours */
         board[i][j].addType(newType);
         calculateNeighbours(i, j);

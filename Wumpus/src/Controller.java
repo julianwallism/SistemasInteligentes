@@ -6,6 +6,7 @@ import javax.swing.event.ChangeListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
 
 public class Controller {
 
@@ -18,13 +19,19 @@ public class Controller {
     }
 
     public void start() {
-        //model.addPropertyChangeListener(this::modelListener);
+        model.addPropertyChangeListener(this::modelListener);
         view.addMouseListener(new FrameClicked());
         view.addActionListener(this::viewActionPerformed);
         view.addSpeedListener(this::viewSpeedChanged);
         View.updateImages(model.getBoard());
         view.setVisible(true);
 
+    }
+
+    private void modelListener(PropertyChangeEvent evt) {
+        if(evt.getPropertyName().equals("movement")) {
+            View.updateImages(model.getBoard());
+        }
     }
 
     public void viewActionPerformed(ActionEvent evt) {

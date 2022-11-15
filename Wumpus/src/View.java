@@ -187,6 +187,11 @@ public class View extends JFrame {
                         imgName += type.toString().toLowerCase() + "_";
                     }
                 }
+
+                if(types.contains(Tile.Type.AGENT)) tile[i][j].setBorder(BorderFactory.createLineBorder(Color.red,2));
+                else if (i==0 && j==0) tile[i][j].setBorder(BorderFactory.createLineBorder(Color.yellow,3));
+                else tile[i][j].setBorder(BorderFactory.createLineBorder(Color.black));
+
                 imgName = imgName.length() == 0 ? "empty" : (imgName.substring(0, imgName.length() - 1));
                 newIcon = image.get(image.containsKey(imgName) ? imgName : "error");
                 if (currentIcon.equals(newIcon)) continue;

@@ -5,20 +5,15 @@ import java.util.ArrayList;
 public class Tile {
 
     private int type, knowledge, times;
-    private boolean isOccupied, visited;
 
     public Tile(Type type) {
         this.type = type.bit;
         this.knowledge = Knowledge.UNKNOWN.bit;
-        this.isOccupied = false;
-        this.visited = false;
         this.times = 0;
     }
 
     public void visit(){
         addType(Type.AGENT);
-        this.isOccupied = true;
-        this.visited = true;
         this.times++;
         calculateKnowledge();
     }
@@ -48,22 +43,6 @@ public class Tile {
 
     public void removeKnowledge(Knowledge knowledge) {
         this.knowledge &= ~knowledge.bit;
-    }
-
-    public boolean isOccupied() {
-        return isOccupied;
-    }
-
-    public void setOccupied(boolean occupied) {
-        isOccupied = occupied;
-    }
-
-    public boolean isVisited() {
-        return visited;
-    }
-
-    public void setVisited(boolean visited) {
-        this.visited = visited;
     }
 
     public int getTimes() {
