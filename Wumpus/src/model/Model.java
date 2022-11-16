@@ -27,47 +27,37 @@ public class Model extends AbstractModel implements Runnable {
         board[xPos][yPos].setTimes(0); //Reset times
     }
 
-    public void setSpeed(int speed){
+    public void setSpeed(int speed) {
         this.speed = speed;
+        if(speed !=0 ) running = true;
+        // kill thread and start again
+
     }
 
     @Override
     public void run() {
-        while(running) {
-            if(!foundGold) {
+        while (running) {
+            if (Type.isType(board[xPos][yPos].getType(), Type.GOLD)) {
+                board[xPos][yPos].removeType(Type.GOLD);
+                NUM_GOLD--;
+                if (NUM_GOLD == 0) {
+                    foundGold = true;
+                }
+            }
+
+            if (!foundGold) {
                 if (board[xPos][yPos].getTimes() == 1) {
                     infer();
                 }
                 think(); // Do we have more information (locally)?
                 holisticThink(); // Do we have more information (globally)?
                 //   killOrCover();
-            } else if (findWayBack()) return;
-            move();
+                move();
+            } else if (goBack()) return;
             if(speed == 0) running = false;
         }
     }
 
-    private boolean findWayBack() {
-        if (xPos != 0 || yPos != 0) {
-            goBack();
-        } else if (Type.isType(board[xPos][yPos].getType(), Type.HOLE, Type.WUMPUS)) {
-            printVisited();
-            return true;
-        }
-        return false;
-
-        if (Type.isType(board[xPos][yPos].getType(), Type.GOLD)) {
-            board[xPos][yPos].removeType(Type.GOLD);
-            NUM_GOLD--;
-            if (NUM_GOLD == 0) {
-                foundGold = true;
-            }
-        } else if (Type.isType(board[xPos][yPos].getType(), Type.HOLE, Type.WUMPUS)) {
-            printVisited();
-            return true;
-        }
-        return false;
-    }
 
     private void infer() {
         int type = board[xPos][yPos].getType();
@@ -250,10 +240,10 @@ public class Model extends AbstractModel implements Runnable {
         }
     }
 
-    private void goBack() {
+    private boolean goBack() {
         // Implement route to get back to 0,0, we can only use the tiles with visited > 0
         // Manhatan distance heuristic
-        
+        if (xPos != 0 || yPos != 0) {
             board[xPos][yPos].removeType(Type.AGENT);
             int min = Integer.MAX_VALUE;
             int minI = 0, minJ = 0;
@@ -276,7 +266,9 @@ public class Model extends AbstractModel implements Runnable {
             yPos = minJ;
             board[xPos][yPos].addType(Type.AGENT);
             sendMovement();
-        
+            return false;
+        }
+        return true;
     }
 
     public int manhattanDistance(int x1, int y1, int x2, int y2) {
@@ -428,7 +420,7 @@ public class Model extends AbstractModel implements Runnable {
         firePropertyChange("movement", null, null);
         try {
             int millis = 0;
-            switch (speed){
+            switch (speed) {
                 case 0 -> millis = 0;
                 case 1 -> millis = 2750;
                 case 2 -> millis = 2250;

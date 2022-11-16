@@ -54,7 +54,12 @@ public class Controller {
 
     public void viewSpeedChanged(ChangeEvent evt) {
         int speed = view.getSpeed();
+        if(thread != null) {
+            thread.interrupt();
+        }
         model.setSpeed(speed);
+        thread = new Thread(model);
+        thread.start();
         // set speed in model
     }
 
