@@ -143,7 +143,6 @@ public class View extends JFrame {
     }
 
     public static int getBoardSize() {
-        /*
         Integer[] possibilities = new Integer[MAX - MIN + 1];
         Arrays.setAll(possibilities, i -> i + MIN);
         Object result = JOptionPane.showInputDialog(null,
@@ -154,8 +153,7 @@ public class View extends JFrame {
                 possibilities,
                 4);
         if (result == null) System.exit(0);
-        return (int) result; */
-        return 5;
+        return (int) result;
     }
 
     public static void loadImages() {

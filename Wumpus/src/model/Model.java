@@ -3,7 +3,7 @@ package model;
 import model.Tile.Type;
 import model.Tile.Knowledge;
 
-public class Model extends AbstractModel {
+public class Model extends AbstractModel implements Runnable {
 
     public static final int[][] directions = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
     public static final int[][] diagonalDirections = {{-1, -1}, {-1, 1}, {1, 1}, {1, -1}};
@@ -12,6 +12,8 @@ public class Model extends AbstractModel {
 
     public Tile[][] board;
     private int xPos, yPos;
+    private int speed;
+    private boolean running, foundGold;
 
     public Model() {
         board = new Tile[SIZE][SIZE];
@@ -25,36 +27,46 @@ public class Model extends AbstractModel {
         board[xPos][yPos].setTimes(0); //Reset times
     }
 
-    public void start() {
-        for (int iter = 0; iter < 100; iter++) {
-            board[xPos][yPos].visit();
-            firePropertyChange("movement", null, null);
-            if (board[xPos][yPos].getTimes() == 1) {
-                infer();
-            }
-            think(); // Do we have more information (locally)?
-            holisticThink(); // Do we have more information (globally)?
-            //   killOrCover();
-            if (Type.isType(board[xPos][yPos].getType(), Type.GOLD)) {
-                board[xPos][yPos].removeType(Type.GOLD);
-                NUM_GOLD--;
-                if (NUM_GOLD == 0) {
-                    System.out.println("Ganaste");
-                    firePropertyChange("movement", null, null);
-                    printVisited();
-                    goBack();
-                    return;
+    public void setSpeed(int speed){
+        this.speed = speed;
+    }
+
+    @Override
+    public void run() {
+        while(running) {
+            if(!foundGold) {
+                if (board[xPos][yPos].getTimes() == 1) {
+                    infer();
                 }
-            } else if (Type.isType(board[xPos][yPos].getType(), Type.HOLE) || Type.isType(board[xPos][yPos].getType(), Type.WUMPUS)) {
-                System.out.println("Perdiste");
-                printVisited();
-                return;
-            }
-            board[xPos][yPos].removeType(Type.AGENT);
+                think(); // Do we have more information (locally)?
+                holisticThink(); // Do we have more information (globally)?
+                //   killOrCover();
+            } else if (findWayBack()) return;
             move();
+            if(speed == 0) running = false;
         }
-        System.out.println("Han pasado 100 iteraciones, hay un bucle?");
-        printVisited();
+    }
+
+    private boolean findWayBack() {
+        if (xPos != 0 || yPos != 0) {
+            goBack();
+        } else if (Type.isType(board[xPos][yPos].getType(), Type.HOLE, Type.WUMPUS)) {
+            printVisited();
+            return true;
+        }
+        return false;
+
+        if (Type.isType(board[xPos][yPos].getType(), Type.GOLD)) {
+            board[xPos][yPos].removeType(Type.GOLD);
+            NUM_GOLD--;
+            if (NUM_GOLD == 0) {
+                foundGold = true;
+            }
+        } else if (Type.isType(board[xPos][yPos].getType(), Type.HOLE, Type.WUMPUS)) {
+            printVisited();
+            return true;
+        }
+        return false;
     }
 
     private void infer() {
@@ -64,11 +76,9 @@ public class Model extends AbstractModel {
             int y = yPos + direction[1];
             if (checkEdges(x, y)) {
                 int kneighbourKnowledge = board[x][y].getKnowledge();
-                if (Type.isType(type, Type.BREEZE) && (Knowledge.isType(kneighbourKnowledge, Knowledge.UNKNOWN)
-                        || Knowledge.isType(kneighbourKnowledge, Knowledge.POSSIBLE_WUMPUS) || Knowledge.isType(kneighbourKnowledge, Knowledge.WUMPUS))) {
+                if (Type.isType(type, Type.BREEZE) && (Knowledge.isOneOf(kneighbourKnowledge, Knowledge.UNKNOWN, Knowledge.POSSIBLE_WUMPUS, Knowledge.WUMPUS))) {
                     board[x][y].addKnowledge(Knowledge.POSSIBLE_HOLE);
-                } else if (Type.isType(type, Type.STENCH) && (Knowledge.isType(kneighbourKnowledge, Knowledge.UNKNOWN)
-                        || Knowledge.isType(kneighbourKnowledge, Knowledge.POSSIBLE_HOLE) || Knowledge.isType(kneighbourKnowledge, Knowledge.HOLE))) {
+                } else if (Type.isType(type, Type.STENCH) && (Knowledge.isOneOf(kneighbourKnowledge, Knowledge.UNKNOWN, Knowledge.POSSIBLE_HOLE, Knowledge.WUMPUS))) {
                     board[x][y].addKnowledge(Knowledge.POSSIBLE_WUMPUS);
                 }
             }
@@ -206,6 +216,7 @@ public class Model extends AbstractModel {
     }
 
     private void move() {
+        board[xPos][yPos].removeType(Type.AGENT);
         int min = Integer.MAX_VALUE;
         int minI = 0, minJ = 0;
         for (int[] direction : directions) {
@@ -225,6 +236,8 @@ public class Model extends AbstractModel {
         }
         xPos = minI;
         yPos = minJ;
+        board[xPos][yPos].visit();
+        sendMovement();
     }
 
     private void printVisited() {
@@ -235,13 +248,12 @@ public class Model extends AbstractModel {
             }
             System.out.println();
         }
-        // TODO: IMPLEMENT THIS
     }
 
     private void goBack() {
         // Implement route to get back to 0,0, we can only use the tiles with visited > 0
         // Manhatan distance heuristic
-        while (xPos != 0 || yPos != 0) {
+        
             board[xPos][yPos].removeType(Type.AGENT);
             int min = Integer.MAX_VALUE;
             int minI = 0, minJ = 0;
@@ -259,12 +271,12 @@ public class Model extends AbstractModel {
                     }
                 }
             }
+            board[xPos][yPos].setTimes(0);
             xPos = minI;
             yPos = minJ;
             board[xPos][yPos].addType(Type.AGENT);
-            firePropertyChange("movement", null, null);
-            System.out.println("Going back to " + xPos + " " + yPos);
-        }
+            sendMovement();
+        
     }
 
     public int manhattanDistance(int x1, int y1, int x2, int y2) {
@@ -406,5 +418,27 @@ public class Model extends AbstractModel {
     // Returns true if the given coordinates are inside the board
     private static boolean checkEdges(int i, int j) {
         return i >= 0 && i < SIZE && j >= 0 && j < SIZE;
+    }
+
+    public void nextMove() {
+        this.running = true;
+    }
+
+    private void sendMovement() {
+        firePropertyChange("movement", null, null);
+        try {
+            int millis = 0;
+            switch (speed){
+                case 0 -> millis = 0;
+                case 1 -> millis = 2750;
+                case 2 -> millis = 2250;
+                case 3 -> millis = 1750;
+                case 4 -> millis = 1250;
+                case 5 -> millis = 750;
+            }
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -12,6 +12,7 @@ public class Controller {
 
     private Model model;
     private View view;
+    private Thread thread;
 
     public Controller(Model model, View view) {
         this.model = model;
@@ -38,16 +39,22 @@ public class Controller {
         switch (evt.getActionCommand()) {
             case "Comenzar" -> {
                 view.start();
-                model.start();
+                if(thread == null) {
+                    thread = new Thread(model);
+                    thread.start();
+                }
             }
             case "->" -> {
-                //
+                model.nextMove();
+                thread = new Thread(model);
+                thread.start();
             }
         }
     }
 
     public void viewSpeedChanged(ChangeEvent evt) {
         int speed = view.getSpeed();
+        model.setSpeed(speed);
         // set speed in model
     }
 
