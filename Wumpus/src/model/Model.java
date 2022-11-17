@@ -51,7 +51,7 @@ public class Model extends AbstractModel implements Runnable {
                 }
                 think(); // Do we have more information (locally)?
                 holisticThink(); // Do we have more information (globally)?
-                //   killOrCover();
+                killOrCover();
                 move();
             } else if (goBack()) return;
             if(speed == 0) running = false;
@@ -217,7 +217,7 @@ public class Model extends AbstractModel implements Runnable {
                 if (Knowledge.isOneOf(knowledge, Knowledge.WUMPUS, Knowledge.HOLE, Knowledge.POSSIBLE_WUMPUS, Knowledge.POSSIBLE_HOLE)) {
                     continue;
                 }
-                if (board[x][y].getTimes() < min) {
+                if (board[x][y].getTimes() < min || (Knowledge.isOneOf(knowledge, Knowledge.DEAD_WUMPUS, Knowledge.COVERED_HOLE))) {
                     min = board[x][y].getTimes();
                     minI = x;
                     minJ = y;
@@ -251,7 +251,9 @@ public class Model extends AbstractModel implements Runnable {
                 int x1 = xPos + direction[0];
                 int y1 = yPos + direction[1];
                 if (checkEdges(x1, y1)) {
-                    if (board[x1][y1].getTimes() > 0) {
+                    if (board[x1][y1].getTimes() > 0
+                            || (x1 == 0 && y1 == 0)
+                            || Knowledge.isOneOf(board[x1][y1].getKnowledge(), Knowledge.DEAD_WUMPUS, Knowledge.COVERED_HOLE)) {
                         int dist = manhattanDistance(x1, y1, 0, 0);
                         if (dist < min) {
                             min = dist;
@@ -276,9 +278,6 @@ public class Model extends AbstractModel implements Runnable {
     }
 
     private void killOrCover() {
-        // if there is a hole in an adjacent tile call cover
-        // if there is a wumpus in the same row or column call kill
-
         // COVERING
         for (int[] direction : directions) {
             int x = xPos + direction[0];
@@ -286,31 +285,34 @@ public class Model extends AbstractModel implements Runnable {
             if (checkEdges(x, y)) {
                 int knowledge = board[x][y].getKnowledge();
                 if (Knowledge.isType(knowledge, Knowledge.HOLE)) {
-                    cover();
+                    cover(x, y);
                 }
             }
         }
 
         // KILLING
         for (int i = 0; i < SIZE; i++) {
-
             if (Knowledge.isType(board[i][yPos].getKnowledge(), Knowledge.WUMPUS)) {
-                kill();
+                kill(i, yPos);
             }
             if (Knowledge.isType(board[xPos][i].getKnowledge(), Knowledge.WUMPUS)) {
-                kill();
+                kill(xPos, i);
             }
         }
-
-
     }
 
-    private void kill() {
-        // TODO
+    private void kill(int x, int y) {
+        board[x][y].removeType(Type.WUMPUS);
+        board[x][y].removeKnowledge(Knowledge.WUMPUS);
+        board[x][y].addKnowledge(Knowledge.DEAD_WUMPUS);
+        board[x][y].addType(Type.DEAD_WUMPUS);
     }
 
-    private void cover() {
-        // TODO
+    private void cover(int x, int y) {
+        board[x][y].removeType(Type.HOLE);
+        board[x][y].removeKnowledge(Knowledge.HOLE);
+        board[x][y].addKnowledge(Knowledge.COVERED_HOLE);
+        board[x][y].addType(Type.COVERED_HOLE);
     }
 
     public Tile[][] getBoard() {

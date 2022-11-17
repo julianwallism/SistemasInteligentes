@@ -59,8 +59,8 @@ public class Tile {
         for(Type type: types) {
             Knowledge type_knowledge = Knowledge.fromType(type);
             switch(type) {
-                case EMPTY, HOLE, WUMPUS, GOLD, BREEZE, STENCH -> this.knowledge |= type_knowledge.bit;
-                case AGENT, COVERED_HOLE, DEAD_WUMPUS-> {}
+                case EMPTY, HOLE, WUMPUS, GOLD, BREEZE, STENCH, DEAD_WUMPUS, COVERED_HOLE-> this.knowledge |= type_knowledge.bit;
+                case AGENT -> {}
             }
         }
     }
@@ -121,7 +121,9 @@ public class Tile {
         BREEZE,
         STENCH,
         POSSIBLE_WUMPUS,
-        POSSIBLE_HOLE;
+        POSSIBLE_HOLE,
+        COVERED_HOLE,
+        DEAD_WUMPUS;
         public int bit;
 
         Knowledge() {
@@ -154,6 +156,8 @@ public class Tile {
                 case WUMPUS     -> Knowledge.WUMPUS;
                 case BREEZE     -> Knowledge.BREEZE;
                 case STENCH     -> Knowledge.STENCH;
+                case DEAD_WUMPUS -> Knowledge.DEAD_WUMPUS;
+                case COVERED_HOLE -> Knowledge.COVERED_HOLE;
                 default         -> Knowledge.EMPTY;
             };
         }

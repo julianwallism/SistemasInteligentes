@@ -20,7 +20,7 @@ public class View extends JFrame {
     private static final int MIN = 4, MAX = 10;
 
     /* Images */
-    private final static String IMAGES_PATH = "assets/images";
+    private final static String IMAGES_PATH = "assets/images2";
     private static int TILE_SIZE;
     private static HashMap<String, ImageIcon> image;
 
@@ -53,7 +53,7 @@ public class View extends JFrame {
             for (int j = 0; j < tile[0].length; j++) {
                 tile[i][j] = new JLabel();
                 if(i == 0 && j == 0) tile[i][j].setBorder(BorderFactory.createLineBorder(Color.yellow,3));
-                else tile[i][j].setBorder(BorderFactory.createLineBorder(Color.black));
+                //else tile[i][j].setBorder(BorderFactory.createLineBorder(Color.black));
                 tile[i][j].setOpaque(true);
                 tile[i][j].setSize(TILE_SIZE, TILE_SIZE);
                 tile[i][j].setIcon(image.get("empty"));
@@ -186,9 +186,9 @@ public class View extends JFrame {
                     }
                 }
 
-                if(types.contains(Tile.Type.AGENT)) tile[i][j].setBorder(BorderFactory.createLineBorder(Color.red,2));
-                else if (i==0 && j==0) tile[i][j].setBorder(BorderFactory.createLineBorder(Color.yellow,3));
-                else tile[i][j].setBorder(BorderFactory.createLineBorder(Color.black));
+//                if(types.contains(Tile.Type.AGENT)) tile[i][j].setBorder(BorderFactory.createLineBorder(Color.red,2));
+//                else if (i==0 && j==0) tile[i][j].setBorder(BorderFactory.createLineBorder(Color.yellow,3));
+//                else tile[i][j].setBorder(BorderFactory.createLineBorder(Color.black));
 
                 imgName = imgName.length() == 0 ? "empty" : (imgName.substring(0, imgName.length() - 1));
                 newIcon = image.get(image.containsKey(imgName) ? imgName : "error");
