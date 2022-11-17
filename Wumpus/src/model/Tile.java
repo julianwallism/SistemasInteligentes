@@ -5,16 +5,26 @@ import java.util.ArrayList;
 public class Tile {
 
     private int type, knowledge, times;
-
+    private boolean safe;
     public Tile(Type type) {
         this.type = type.bit;
         this.knowledge = Knowledge.UNKNOWN.bit;
         this.times = 0;
+        this.safe = false;
+    }
+
+    public boolean isSafe() {
+        return safe;
+    }
+
+    public void setSafe(boolean visited) {
+        this.safe = visited;
     }
 
     public void visit(){
         addType(Type.AGENT);
         this.times++;
+        safe = true;
         calculateKnowledge();
     }
 
