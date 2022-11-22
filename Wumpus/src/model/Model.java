@@ -3,6 +3,8 @@ package model;
 import model.Tile.Type;
 import model.Tile.Knowledge;
 
+import java.util.*;
+
 public class Model extends AbstractModel implements Runnable {
 
     public static final int[][] directions = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
@@ -11,8 +13,9 @@ public class Model extends AbstractModel implements Runnable {
 
 
     public Tile[][] board;
+    private ArrayList<Pos> movesBack;
     private int xPos, yPos;
-    private int speed;
+    private int speed, backCtr;
     private boolean running, foundGold;
 
     public Model() {
@@ -25,13 +28,13 @@ public class Model extends AbstractModel implements Runnable {
         xPos = yPos = 0;
         board[xPos][yPos].visit();
         board[xPos][yPos].setTimes(0); //Reset times
+        backCtr = 0;
     }
 
     public void setSpeed(int speed) {
         this.speed = speed;
         if(speed !=0 ) running = true;
         // kill thread and start again
-
     }
 
     @Override
@@ -44,14 +47,13 @@ public class Model extends AbstractModel implements Runnable {
                     foundGold = true;
                 }
             }
-
             if (!foundGold) {
                 infer();
                 think(); // Do we have more information (locally)?
                 holisticThink(); // Do we have more information (globally)?
                 killOrCover();
                 move();
-            } else if (goBack()) return;
+            } else if (!goBack()) return;
             if(speed == 0) running = false;
         }
     }
@@ -248,8 +250,45 @@ public class Model extends AbstractModel implements Runnable {
     }
 
     private boolean goBack() {
-        // Implement route to get back to 0,0, we can only use the tiles with visited > 0
-        // Manhatan distance heuristic
+        if(movesBack == null) {
+            movesBack = new ArrayList<>();
+            Map<Pos, Pos> parentNodes = new HashMap<>();
+            boolean[][] visitats = new boolean[SIZE][SIZE];
+            ArrayDeque<Pos> oberts = new ArrayDeque();
+            oberts.add(new Pos(xPos, yPos));
+            while (!oberts.isEmpty()) {
+                Pos pos = oberts.remove();
+                if (pos.x == 0 && pos.y == 0) {
+                    break;
+                } else {
+                    visitats[pos.x][pos.y] = true;
+                    for (int[] direction : directions) {
+                        Pos newPos = new Pos(pos.x + direction[0], pos.y + direction[1]);
+                        if (checkEdges(newPos.x, newPos.y) && !visitats[newPos.x][newPos.y] && board[newPos.x][newPos.y].isSafe()) {
+                            oberts.add(newPos);
+                            visitats[newPos.x][newPos.y] = true;
+                            parentNodes.put(newPos, pos);
+                        } 0
+                    }
+                }
+            }
+            Pos node = new Pos(0,0);
+            while(node != null) {
+                movesBack.add(node);
+                node = parentNodes.get(node);
+            }
+            Collections.reverse(movesBack);
+            return true;
+        } else if(backCtr != movesBack.size()){
+            board[xPos][yPos].removeType(Type.AGENT);
+            Pos newPos = movesBack.get(backCtr++);
+            xPos = newPos.x;
+            yPos = newPos.y;
+            board[xPos][yPos].visit();
+            sendMovement();
+            return true;
+        }
+        /*
         if (xPos != 0 || yPos != 0) {
             board[xPos][yPos].removeType(Type.AGENT);
             int min = Integer.MAX_VALUE;
@@ -275,7 +314,8 @@ public class Model extends AbstractModel implements Runnable {
             sendMovement();
             return false;
         }
-        return true;
+        */
+        return false;
     }
 
     public int manhattanDistance(int x1, int y1, int x2, int y2) {
@@ -438,6 +478,34 @@ public class Model extends AbstractModel implements Runnable {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static class Pos {
+        public int x, y;
+
+        public Pos(int x, int y){
+            this.x = x;
+            this.y = y;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Pos pos = (Pos) o;
+            return x == pos.x && y == pos.y;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(x, y);
+        }
+
+
+        @Override
+        public String toString() {
+            return "Pos{" + "x=" + x + ", y=" + y +'}';
         }
     }
 }
