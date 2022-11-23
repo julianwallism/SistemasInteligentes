@@ -6,6 +6,7 @@ public class Tile {
 
     private int type, knowledge, times;
     private boolean safe;
+
     public Tile(Type type) {
         this.type = type.bit;
         this.knowledge = Knowledge.UNKNOWN.bit;
@@ -21,7 +22,7 @@ public class Tile {
         this.safe = visited;
     }
 
-    public void visit(){
+    public void visit() {
         addType(Type.AGENT);
         this.times++;
         safe = true;
@@ -66,13 +67,15 @@ public class Tile {
     private void calculateKnowledge() {
         this.knowledge = 0;
         ArrayList<Type> types = Type.asList(this.type);
-        for(Type type: types) {
+        for (Type type : types) {
             Knowledge type_knowledge = Knowledge.fromType(type);
             switch(type) {
                 case EMPTY, HOLE, WUMPUS, GOLD, BREEZE, STENCH, DEAD_WUMPUS, COVERED_HOLE-> this.knowledge |= type_knowledge.bit;
                 case AGENT -> {}
             }
         }
+        this.knowledge |= Knowledge.NOT_HOLE.bit;
+        this.knowledge |= Knowledge.NOT_WUMPUS.bit;
     }
 
     public enum Type {
@@ -94,7 +97,7 @@ public class Tile {
 
         public static boolean isType(int tile, Type... types) {
             int sum = 0;
-            for (Type type: types){
+            for (Type type : types) {
                 sum |= type.bit;
             }
             return (tile & sum) != 0;
@@ -103,17 +106,17 @@ public class Tile {
 
         // Returns true if the tile has only the types given
         public static boolean isOnlyTypes(int tile, Type... types) {
-             int sum = 0;
-             for (Type type : types) {
-                 sum |= type.bit;
-             }
-             return (tile & ~sum) == 0;
-         }
+            int sum = 0;
+            for (Type type : types) {
+                sum |= type.bit;
+            }
+            return (tile & ~sum) == 0;
+        }
 
         public static ArrayList<Type> asList(int type) {
             ArrayList<Type> types = new ArrayList<>();
-            for(Type val: Type.values()){
-                if(isType(type, val)) types.add(val);
+            for (Type val : Type.values()) {
+                if (isType(type, val)) types.add(val);
             }
             return types;
         }
@@ -133,7 +136,9 @@ public class Tile {
         POSSIBLE_WUMPUS,
         POSSIBLE_HOLE,
         COVERED_HOLE,
-        DEAD_WUMPUS;
+        DEAD_WUMPUS,
+        NOT_WUMPUS,
+        NOT_HOLE;
         public int bit;
 
         Knowledge() {
@@ -146,29 +151,30 @@ public class Tile {
 
         public static boolean isOneOf(int tile, Knowledge... knowledges) {
             for (Knowledge knowledge : knowledges) {
-                if(isType(tile, knowledge)) {
+                if (isType(tile, knowledge)) {
                     return true;
                 }
             }
             return false;
         }
+
         public static ArrayList<Knowledge> asList(int type) {
             ArrayList<Knowledge> knowledges = new ArrayList<>();
-            for(Knowledge val: Knowledge.values()){
-                if(isType(type, val)) knowledges.add(val);
+            for (Knowledge val : Knowledge.values()) {
+                if (isType(type, val)) knowledges.add(val);
             }
             return knowledges;
         }
 
         public static Knowledge fromType(Type type) {
-             return switch(type) {
-                case HOLE       -> Knowledge.HOLE;
-                case WUMPUS     -> Knowledge.WUMPUS;
-                case BREEZE     -> Knowledge.BREEZE;
-                case STENCH     -> Knowledge.STENCH;
+            return switch (type) {
+                case HOLE -> Knowledge.HOLE;
+                case WUMPUS -> Knowledge.WUMPUS;
+                case BREEZE -> Knowledge.BREEZE;
+                case STENCH -> Knowledge.STENCH;
                 case DEAD_WUMPUS -> Knowledge.DEAD_WUMPUS;
                 case COVERED_HOLE -> Knowledge.COVERED_HOLE;
-                default         -> Knowledge.EMPTY;
+                default -> Knowledge.EMPTY;
             };
         }
     }

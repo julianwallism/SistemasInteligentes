@@ -45,22 +45,14 @@ public class Controller {
                 }
             }
             case "->" -> {
-                model.nextMove();
-                thread = new Thread(model);
-                thread.start();
+                model.setSpeed(0);
             }
         }
     }
 
     public void viewSpeedChanged(ChangeEvent evt) {
         int speed = view.getSpeed();
-        if(thread != null) {
-            thread.interrupt();
-        }
         model.setSpeed(speed);
-        thread = new Thread(model);
-        thread.start();
-        // set speed in model
     }
 
     private class FrameClicked extends MouseAdapter {

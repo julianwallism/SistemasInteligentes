@@ -28,7 +28,7 @@ public class View extends JFrame {
     private JPanel panel;
     private static JLabel[][] tile;
 
-    private JButton startBtn, nextBtn;
+    private JButton startBtn, nextBtn, resetBtn, resetBtn2;
     private JComboBox tileChooser;
     private JLabel textArea, tileLbl, speedLbl, speedValLbl;
     private JSlider speedSlider;
@@ -67,6 +67,12 @@ public class View extends JFrame {
         tileChooser = new JComboBox<>(Tile.Type.getPlacebleTypes());
 
         startBtn = new JButton("Comenzar");
+        //set color with hex
+        startBtn.setBackground(Color.decode("#66ff66"));
+        resetBtn = new JButton("Reiniciar Juego");
+        resetBtn.setBackground(Color.decode("#ff6666"));
+        resetBtn2 = new JButton("Reiniciar Casillas");
+        resetBtn2.setBackground(Color.decode("#ff1a1a"));
 
         speedLbl = new JLabel("Velocidad");
         speedSlider = new JSlider(JSlider.HORIZONTAL, 0, 5, 0);
@@ -94,9 +100,15 @@ public class View extends JFrame {
                                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                                 .addComponent(textArea, javax.swing.GroupLayout.PREFERRED_SIZE, 248, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addGap(30, 30, 30))
-                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                        .addGroup(javax.swing.GroupLayout.Alignment.CENTER, layout.createSequentialGroup()
                                                 .addComponent(startBtn)
-                                                .addGap(110, 110, 110))
+                                                .addGap(50, 50, 50))
+                                        .addGroup(javax.swing.GroupLayout.Alignment.CENTER, layout.createSequentialGroup()
+                                                .addComponent(resetBtn)
+                                                .addGap(50, 50, 50))
+                                        .addGroup(javax.swing.GroupLayout.Alignment.CENTER, layout.createSequentialGroup()
+                                                .addComponent(resetBtn2)
+                                                .addGap(50, 50, 50))
                                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                                 .addComponent(speedValLbl)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -126,6 +138,10 @@ public class View extends JFrame {
                                                 .addComponent(tileChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addGap(24, 24, 24)
                                                 .addComponent(startBtn)
+                                                .addGap(18, 18, 18)
+                                                .addComponent(resetBtn)
+                                                .addGap(18, 18, 18)
+                                                .addComponent(resetBtn2)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addComponent(speedLbl)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
