@@ -70,7 +70,7 @@ public class Model extends AbstractModel implements Runnable {
 
 
     private void infer() {
-        if (board[xPos][yPos].getTimes() > 1) return;
+//        if (board[xPos][yPos].getTimes() > 1) return;
         int type = board[xPos][yPos].getType();
         System.out.println(Type.asList(type));
         for (int[] direction : directions) {
@@ -233,8 +233,6 @@ public class Model extends AbstractModel implements Runnable {
             int x = xPos + direction[0];
             int y = yPos + direction[1];
             if (checkEdges(x, y)) {
-                int knowledge = board[x][y].getKnowledge();
-                System.out.println("xPos: " + xPos + " yPos: " + yPos + " || x: " + x + ", y: " + y + " || Knowledge: " + Knowledge.asList(knowledge) + " || Safe: " + board[x][y].isSafe() + " || Times: " + board[x][y].getTimes());
                 if (!board[x][y].isSafe()) continue;
                 if (board[x][y].getTimes() < min) {
                     min = board[x][y].getTimes();
@@ -323,6 +321,7 @@ public class Model extends AbstractModel implements Runnable {
         board[x][y].removeKnowledge(Knowledge.WUMPUS);
         board[x][y].setSafe(true);
         board[x][y].addType(Type.DEAD_WUMPUS);
+        deletePerception(false, x, y);
         sendMovement();
     }
 
@@ -331,7 +330,39 @@ public class Model extends AbstractModel implements Runnable {
         board[x][y].removeKnowledge(Knowledge.HOLE);
         board[x][y].setSafe(true);
         board[x][y].addType(Type.COVERED_HOLE);
+        deletePerception(true, x, y);
         sendMovement();
+    }
+
+    private void deletePerception(Boolean breeze, int x, int y){
+        outerloop:
+      for(int[] direction : directions){
+        int x1 = x + direction[0];
+        int y1 = y + direction[1];
+        if(checkEdges(x1, y1)){
+            for(int[] direction2: directions){
+                int x2 = x1 + direction2[0];
+                int y2 = y1 + direction2[1];
+                if(checkEdges(x2, y2) && !(x2 == x && y2 == y)){
+                    int type = board[x2][y2].getType();
+                    if(breeze){
+                        if(Type.isType(type, Type.HOLE)){
+                            continue outerloop;
+                        }
+                    }else{
+                        if(Type.isType(type, Type.WUMPUS)){
+                           continue outerloop;
+                        }
+                    }
+                }
+            }
+            if(breeze){
+                board[x1][y1].removeType(Type.BREEZE);
+            }else{
+                board[x1][y1].removeType(Type.BREEZE);
+            }
+        }
+      }
     }
 
     public Tile[][] getBoard() {
