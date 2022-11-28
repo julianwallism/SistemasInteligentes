@@ -11,6 +11,7 @@ public class Tile {
         this.type = type.bit;
         this.times = 0;
         this.safe = false;
+        this.knowledge = Knowledge.UNKNOWN.bit;
     }
 
     public Tile(ArrayList<Type> types) {
@@ -46,10 +47,10 @@ public class Tile {
     }
 
     public void visit() {
-        addType(Type.AGENT);
         this.times++;
         safe = true;
         calculateKnowledge();
+        addType(Type.AGENT);
     }
 
     public int getType() {
@@ -70,13 +71,17 @@ public class Tile {
         return knowledge;
     }
 
-    public void addKnowledge(Knowledge knowledge) {
+    public void addKnowledge(Knowledge... knowledges) {
         this.knowledge &= ~Knowledge.EMPTY.bit;
-        this.knowledge |= knowledge.bit;
+        for(Knowledge k: knowledges) {
+            this.knowledge |= k.bit;
+        }
     }
 
-    public void removeKnowledge(Knowledge knowledge) {
-        this.knowledge &= ~knowledge.bit;
+    public void removeKnowledge(Knowledge... knowledges) {
+        for(Knowledge k: knowledges) {
+            this.knowledge &= ~k.bit;
+        }
     }
 
     public int getTimes() {

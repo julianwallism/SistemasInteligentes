@@ -242,6 +242,8 @@ public class View extends JFrame {
     public void addActionListener(ActionListener listener) {
         startBtn.addActionListener(listener);
         nextBtn.addActionListener(listener);
+        resetBtn.addActionListener(listener);
+        resetBtn2.addActionListener(listener);
     }
 
     public void addSpeedListener(ChangeListener listener){
