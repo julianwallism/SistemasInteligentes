@@ -239,8 +239,18 @@ public class View extends JFrame {
         panel.removeMouseListener(panel.getMouseListeners()[0]);
     }
 
+    public void resetTiles(){
+
+    }
+
+    public void resetGame(){
+
+    }
+
     public void addActionListener(ActionListener listener) {
         startBtn.addActionListener(listener);
+        resetBtn.addActionListener(listener);
+        resetBtn2.addActionListener(listener);
         nextBtn.addActionListener(listener);
         resetBtn.addActionListener(listener);
         resetBtn2.addActionListener(listener);
