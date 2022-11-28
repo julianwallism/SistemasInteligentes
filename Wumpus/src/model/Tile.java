@@ -9,9 +9,32 @@ public class Tile {
 
     public Tile(Type type) {
         this.type = type.bit;
+        this.times = 0;
+        this.safe = false;
+    }
+
+    public Tile(ArrayList<Type> types) {
+        this.type = 0;
+        this.times = 0;
+        this.safe = false;
+        for(Type type : types) {
+            this.type |= type.bit;
+        }
+    }
+
+    public void resetTile() {
+
         this.knowledge = Knowledge.UNKNOWN.bit;
         this.times = 0;
         this.safe = false;
+
+        if (Type.isType(type, Type.COVERED_HOLE)) {
+            type = Type.HOLE.bit;
+        } else if (Type.isType(type, Type.DEAD_WUMPUS)) {
+            type = Type.WUMPUS.bit;
+        } else if (Type.isType(type, Type.AGENT)) {
+            removeType(Type.AGENT);
+        }
     }
 
     public boolean isSafe() {

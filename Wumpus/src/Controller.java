@@ -47,6 +47,14 @@ public class Controller {
             case "->" -> {
                 model.setSpeed(0);
             }
+            case "Reiniciar Juego"->     {
+                System.out.println("Reiniciar Juego");
+                model.resetGame();
+            }
+            case "Reiniciar Casillas"->     {
+                System.out.println("Reiniciar Casillas");
+                model.init();
+            }
         }
     }
 

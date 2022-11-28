@@ -17,6 +17,9 @@ public class Model extends AbstractModel implements Runnable {
     private boolean running, foundGold, finished;
 
     public Model() {
+       init();
+    }
+    public void init(){
         board = new Tile[SIZE][SIZE];
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
@@ -28,6 +31,7 @@ public class Model extends AbstractModel implements Runnable {
         board[xPos][yPos].setTimes(0); //Reset times
         backCtr = 0;
         finished = false;
+        sendMovement();
     }
 
     public void setSpeed(int speed) {
@@ -327,14 +331,15 @@ public class Model extends AbstractModel implements Runnable {
         board[x][y].removeKnowledge(Knowledge.WUMPUS);
         board[x][y].setSafe(true);
         board[x][y].addType(Type.DEAD_WUMPUS);
+        sendMovement();
     }
 
     private void cover(int x, int y) {
         board[x][y].removeType(Type.HOLE);
         board[x][y].removeKnowledge(Knowledge.HOLE);
         board[x][y].setSafe(true);
-        System.out.println("COVERING");
         board[x][y].addType(Type.COVERED_HOLE);
+        sendMovement();
     }
 
     public Tile[][] getBoard() {
@@ -457,6 +462,28 @@ public class Model extends AbstractModel implements Runnable {
             throw new RuntimeException(e);
         }
     }
+    public void resetGame(){
+        board[xPos][yPos].removeType(Type.AGENT);
+
+        for (int i = 0; i < SIZE; i++) {
+            for (int j = 0; j < SIZE; j++) {
+                ArrayList<Type> types = Type.asList(board[i][j].getType());
+                if(types.contains(Type.COVERED_HOLE)) {
+                    types.remove(Type.COVERED_HOLE);
+                    types.add(Type.HOLE);
+                }
+                if(types.contains(Type.DEAD_WUMPUS)) {
+                    types.remove(Type.DEAD_WUMPUS);
+                    types.add(Type.WUMPUS);
+                }
+                board[i][j] = new Tile(types);
+            }
+        }
+        xPos = yPos = 0;
+        board[xPos][yPos].addType(Type.AGENT);
+        sendMovement();
+    }
+
 
     private static class Pos {
         public int x, y;
