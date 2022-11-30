@@ -104,6 +104,7 @@ public class Tile {
         }
         this.knowledge |= Knowledge.NOT_HOLE.bit;
         this.knowledge |= Knowledge.NOT_WUMPUS.bit;
+        removeKnowledge(Knowledge.UNKNOWN);
     }
 
     public enum Type {
