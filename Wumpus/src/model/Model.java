@@ -70,41 +70,37 @@ public class Model extends AbstractModel implements Runnable {
 
 
     private void infer() {
-//        if (board[xPos][yPos].getTimes() > 1) return;
         int type = board[xPos][yPos].getType();
-        System.out.println("Ty" + Type.asList(type));
         for (int[] direction : directions) {
             int x = xPos + direction[0], y = yPos + direction[1];
             if (checkEdges(x, y)) {
                 int kneighbourKnowledge = board[x][y].getKnowledge();
                 if (Type.isType(type, Type.BREEZE)
-                        && !Knowledge.isType(kneighbourKnowledge, Knowledge.NOT_HOLE)
-                        && !board[x][y].isSafe()) {
+                        && !Knowledge.isType(kneighbourKnowledge, Knowledge.NOT_HOLE)) {
                     board[x][y].addKnowledge(Knowledge.POSSIBLE_HOLE);
-
-                } else if (Type.isType(type, Type.STENCH)
-                        && !Knowledge.isType(kneighbourKnowledge, Knowledge.NOT_WUMPUS)
-                        && !board[x][y].isSafe()) {
-                    board[x][y].addKnowledge(Knowledge.POSSIBLE_WUMPUS);
-
-                } else if (Type.isType(type, Type.EMPTY, Type.AGENT)) {
-                    board[x][y].setSafe(true);
-                    board[x][y].removeKnowledge(Knowledge.POSSIBLE_HOLE, Knowledge.POSSIBLE_WUMPUS);
-                    board[x][y].addKnowledge(Knowledge.NOT_HOLE, Knowledge.NOT_WUMPUS);
+                } else {
+                    board[xPos][yPos].removeKnowledge(Knowledge.BREEZE);
+                    board[x][y].addKnowledge(Knowledge.NOT_HOLE);
+                    board[x][y].removeKnowledge(Knowledge.POSSIBLE_HOLE, Knowledge.HOLE);
                 }
 
-                if (!Type.isType(type, Type.STENCH)) {
+                if (Type.isType(type, Type.STENCH)
+                        && !Knowledge.isType(kneighbourKnowledge, Knowledge.NOT_WUMPUS)) {
+                    board[x][y].addKnowledge(Knowledge.POSSIBLE_WUMPUS);
+                } else {
                     board[xPos][yPos].removeKnowledge(Knowledge.STENCH);
                     board[x][y].addKnowledge(Knowledge.NOT_WUMPUS);
                     board[x][y].removeKnowledge(Knowledge.POSSIBLE_WUMPUS, Knowledge.WUMPUS);
                 }
-                if (!Type.isType(type, Type.BREEZE)) {
-                    board[xPos][yPos].removeKnowledge(Knowledge.BREEZE);
-                    board[x][y].addKnowledge(Knowledge.NOT_HOLE);
-                    board[x][y].removeKnowledge(Knowledge.POSSIBLE_HOLE, Knowledge.HOLE);
 
+                if (!(Type.isType(type, Type.BREEZE)
+                        && !Knowledge.isType(kneighbourKnowledge, Knowledge.NOT_HOLE)) &&
+                        !(Type.isType(type, Type.STENCH)
+                                && !Knowledge.isType(kneighbourKnowledge, Knowledge.NOT_WUMPUS))) {
+                    board[x][y].setSafe(true);
+                    board[x][y].removeKnowledge(Knowledge.POSSIBLE_HOLE, Knowledge.POSSIBLE_WUMPUS);
+                    board[x][y].addKnowledge(Knowledge.NOT_HOLE, Knowledge.NOT_WUMPUS);
                 }
-                System.out.println("Kn" + Knowledge.asList(board[x][y].getKnowledge()));
             }
         }
     }
@@ -127,9 +123,6 @@ public class Model extends AbstractModel implements Runnable {
                     int unknown = 0;
                     int possibleHole = 0;
                     int possibleWumpus = 0;
-//                    int covered = 0;
-//                    int dead = 0;
-                    // TODO: REFACTOR THIS
                     for (int[] direction : directions) {
                         int x = i + direction[0];
                         int y = j + direction[1];
@@ -142,40 +135,32 @@ public class Model extends AbstractModel implements Runnable {
                             } else if (Knowledge.isType(neighbourKnowledge, Knowledge.POSSIBLE_WUMPUS)) {
                                 possibleWumpus++;
                             }
-//                            else if (Knowledge.isType(neighbourKnowledge, Knowledge.COVERED_HOLE)) {
-//                                covered++;
-//                            } else if (Knowledge.isType(neighbourKnowledge, Knowledge.DEAD_WUMPUS)) {
-//                                dead++;
-//                            }
                         } else continue outerloop;
                     }
 
-                    if (Knowledge.isType(knowledge, Knowledge.BREEZE)) {
-                        if (possibleHole == 1 && unknown == 0 || possibleHole == 0 && unknown == 1) {
-                            for (int[] direction : directions) {
-                                int x = i + direction[0];
-                                int y = j + direction[1];
-                                if (checkEdges(x, y)) {
-                                    int neighbourKnowledge = board[x][y].getKnowledge();
-                                    if (Knowledge.isOneOf(neighbourKnowledge, Knowledge.UNKNOWN, Knowledge.POSSIBLE_HOLE)) {
-                                        board[x][y].addKnowledge(Knowledge.HOLE);
-                                        System.out.println("Hole at " + x + " " + y + " it has " + Knowledge.asList(board[x][y].getKnowledge()));
-                                    }
+                    if ((Knowledge.isType(knowledge, Knowledge.BREEZE))
+                            && ((possibleHole == 1 && unknown == 0) || (possibleHole == 0 && unknown == 1))) {
+                        for (int[] direction : directions) {
+                            int x = i + direction[0];
+                            int y = j + direction[1];
+                            if (checkEdges(x, y)) {
+                                int neighbourKnowledge = board[x][y].getKnowledge();
+                                if (Knowledge.isOneOf(neighbourKnowledge, Knowledge.UNKNOWN, Knowledge.POSSIBLE_HOLE)) {
+                                    board[x][y].addKnowledge(Knowledge.HOLE);
                                 }
                             }
                         }
                     }
 
-                    if (Knowledge.isType(knowledge, Knowledge.STENCH)) {
-                        if (possibleWumpus == 0 && unknown == 1 || possibleWumpus == 1 && unknown == 0) {
-                            for (int[] direction : directions) {
-                                int x = i + direction[0];
-                                int y = j + direction[1];
-                                if (checkEdges(x, y)) {
-                                    int neighbourKnowledge = board[x][y].getKnowledge();
-                                    if (Knowledge.isOneOf(neighbourKnowledge, Knowledge.UNKNOWN, Knowledge.POSSIBLE_WUMPUS)) {
-                                        board[x][y].addKnowledge(Knowledge.WUMPUS);
-                                    }
+                    if ((Knowledge.isType(knowledge, Knowledge.STENCH)) &&
+                            ((possibleWumpus == 0 && unknown == 1) || (possibleWumpus == 1 && unknown == 0))) {
+                        for (int[] direction : directions) {
+                            int x = i + direction[0];
+                            int y = j + direction[1];
+                            if (checkEdges(x, y)) {
+                                int neighbourKnowledge = board[x][y].getKnowledge();
+                                if (Knowledge.isOneOf(neighbourKnowledge, Knowledge.UNKNOWN, Knowledge.POSSIBLE_WUMPUS)) {
+                                    board[x][y].addKnowledge(Knowledge.WUMPUS);
                                 }
                             }
                         }
