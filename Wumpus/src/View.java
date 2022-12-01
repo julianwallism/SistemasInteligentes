@@ -72,7 +72,7 @@ public class View extends JFrame {
         resetBtn = new JButton("Reiniciar Juego");
         resetBtn.setBackground(Color.decode("#ff6666"));
         resetBtn2 = new JButton("Reiniciar Casillas");
-        resetBtn2.setBackground(Color.decode("#ff1a1a"));
+        resetBtn2.setBackground(Color.decode("#ff6666"));
 
         speedLbl = new JLabel("Velocidad");
         speedSlider = new JSlider(JSlider.HORIZONTAL, 0, 5, 0);
@@ -104,7 +104,7 @@ public class View extends JFrame {
                                                 .addComponent(startBtn)
                                                 .addGap(50, 50, 50))
                                         .addGroup(javax.swing.GroupLayout.Alignment.CENTER, layout.createSequentialGroup()
-                                                .addComponent(resetBtn)
+                                                //.addComponent(resetBtn)
                                                 .addGap(50, 50, 50))
                                         .addGroup(javax.swing.GroupLayout.Alignment.CENTER, layout.createSequentialGroup()
                                                 .addComponent(resetBtn2)
@@ -139,7 +139,7 @@ public class View extends JFrame {
                                                 .addGap(24, 24, 24)
                                                 .addComponent(startBtn)
                                                 .addGap(18, 18, 18)
-                                                .addComponent(resetBtn)
+                                                //.addComponent(resetBtn)
                                                 .addGap(18, 18, 18)
                                                 .addComponent(resetBtn2)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -231,12 +231,14 @@ public class View extends JFrame {
     }
 
     // When the startBtn gets clicked, block the tileChooser and the frame
-    public void start() {
-        tileChooser.setEnabled(false);
-        startBtn.setEnabled(false);
-        speedSlider.setEnabled(true);
-        nextBtn.setEnabled(true);
-        panel.removeMouseListener(panel.getMouseListeners()[0]);
+    public void start(boolean start) {
+        tileChooser.setEnabled(!start);
+        startBtn.setEnabled(!start);
+        speedSlider.setEnabled(start);
+        nextBtn.setEnabled(start);
+        if(start) {
+            panel.removeMouseListener(panel.getMouseListeners()[0]);
+        }
     }
 
     public void resetTiles(){
@@ -249,8 +251,6 @@ public class View extends JFrame {
 
     public void addActionListener(ActionListener listener) {
         startBtn.addActionListener(listener);
-        resetBtn.addActionListener(listener);
-        resetBtn2.addActionListener(listener);
         nextBtn.addActionListener(listener);
         resetBtn.addActionListener(listener);
         resetBtn2.addActionListener(listener);

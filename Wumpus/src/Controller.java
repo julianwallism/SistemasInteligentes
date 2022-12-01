@@ -3,6 +3,7 @@ import model.Model;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -13,15 +14,17 @@ public class Controller {
     private Model model;
     private View view;
     private Thread thread;
+    private FrameClicked mouseListener;
 
     public Controller(Model model, View view) {
         this.model = model;
         this.view = view;
+        mouseListener = new FrameClicked();
     }
 
     public void start() {
         model.addPropertyChangeListener(this::modelListener);
-        view.addMouseListener(new FrameClicked());
+        view.addMouseListener(mouseListener);
         view.addActionListener(this::viewActionPerformed);
         view.addSpeedListener(this::viewSpeedChanged);
         View.updateImages(model.getBoard());
@@ -38,7 +41,7 @@ public class Controller {
     public void viewActionPerformed(ActionEvent evt) {
         switch (evt.getActionCommand()) {
             case "Comenzar" -> {
-                view.start();
+                view.start(true);
                 if(thread == null) {
                     thread = new Thread(model);
                     thread.start();
@@ -50,6 +53,8 @@ public class Controller {
             }
             case "Reiniciar Casillas"->     {
                 model.init();
+                view.start(false);
+                view.addMouseListener(mouseListener);
             }
         }
     }
@@ -60,7 +65,6 @@ public class Controller {
     }
 
     private class FrameClicked extends MouseAdapter {
-
         @Override
         public void mousePressed(MouseEvent evt) {
             int i = evt.getY() / (View.PANEL_SIZE / Model.SIZE);
